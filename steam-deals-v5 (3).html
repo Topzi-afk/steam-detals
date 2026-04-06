@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEAM DEALS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04040c;--bg2:#080814;
+  --acc:#c8ff00;--acc2:#a0d400;--accR:200;--accG:255;--accB:0;
+  --card:rgba(255,255,255,.035);--cardhv:rgba(255,255,255,.07);
+  --bdr:rgba(255,255,255,.06);--txt:#e8eaf6;--muted:#4a5068;
+  --cyan:#00f5ff;--gold:#ffcc00;--purple:#7c3aed;
+  --fh:'Syne',sans-serif;--fr:'DM Sans',sans-serif;--fm:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--fr);min-height:100vh;overflow-x:hidden;cursor:default}
+
+/* ── CURSOR ── */
+.cdot{position:fixed;width:8px;height:8px;background:var(--acc);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen}
+.cring{position:fixed;width:32px;height:32px;border:1px solid rgba(var(--accR),var(--accG),var(--accB),.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .2s,height .2s,border-color .2s;mix-blend-mode:screen}
+
+/* ── BG ── */
+.bg-fixed{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.nebula{position:absolute;inset:-60%;width:220%;height:220%;
+  background:radial-gradient(ellipse 55% 35% at 15% 15%,rgba(124,58,237,.12) 0%,transparent 55%),
+             radial-gradient(ellipse 45% 50% at 85% 80%,rgba(var(--accR),var(--accG),var(--accB),.07) 0%,transparent 55%),
+             radial-gradient(ellipse 40% 40% at 75% 20%,rgba(0,245,255,.06) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 35% at 25% 85%,rgba(255,0,110,.05) 0%,transparent 55%);
+  animation:neb 22s ease-in-out infinite alternate}
+@keyframes neb{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-2%,3%) scale(1.03)}100%{transform:translate(2%,-2%) scale(.97)}}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--accR),var(--accG),var(--accB),.02) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accR),var(--accG),var(--accB),.02) 1px,transparent 1px);background-size:80px 80px;mask-image:linear-gradient(to bottom,transparent 0%,black 10%,black 90%,transparent 100%)}
+.grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.4}
+canvas#stars{position:absolute;inset:0}
+
+/* ── PROGRESS ── */
+#pbar{position:fixed;top:0;left:0;height:2px;z-index:9000;background:linear-gradient(90deg,var(--purple),var(--acc),var(--cyan));background-size:200% 100%;animation:pshim 1.5s linear infinite;transition:width .4s,opacity .4s;box-shadow:0 0 12px var(--acc)}
+@keyframes pshim{0%{background-position:200% 0}100%{background-position:0 0}}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:100;padding:0 40px;height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(4,4,12,.88);backdrop-filter:blur(24px) saturate(160%);border-bottom:1px solid var(--bdr);gap:12px}
+.logo{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.logo-mark{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.logo-mark::before{content:'';position:absolute;inset:0;border:2px solid var(--acc);border-radius:8px;animation:lpulse 2s ease-in-out infinite}
+@keyframes lpulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--accR),var(--accG),var(--accB),.4)}50%{box-shadow:0 0 0 8px rgba(var(--accR),var(--accG),var(--accB),0)}}
+.logo-mark svg{color:var(--acc)}
+.logo-name{font-family:var(--fh);font-size:22px;letter-spacing:.06em;background:linear-gradient(90deg,var(--acc),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:10px}
+#timer-display{font-family:var(--fm);font-size:11px;color:var(--muted);text-align:right;line-height:1.6;white-space:nowrap}
+#timer-display em{color:var(--acc);font-style:normal}
+
+/* ── HEADER BUTTONS ── */
+.hdr-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-family:var(--fr);font-size:13px;font-weight:600;cursor:pointer;transition:all .22s;white-space:nowrap}
+.hdr-btn:hover{border-color:rgba(var(--accR),var(--accG),var(--accB),.4);background:rgba(var(--accR),var(--accG),var(--accB),.07);color:var(--acc)}
+.hdr-btn.open{border-color:rgba(var(--accR),var(--accG),var(--accB),.5);color:var(--acc)}
+.hdr-btn svg.spinning{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hdr-btn .arr{font-size:9px;color:var(--muted);transition:transform .2s}
+.hdr-btn.open .arr{transform:rotate(180deg)}
+.btn-refresh{border-color:rgba(var(--accR),var(--accG),var(--accB),.35);color:var(--acc);font-weight:700;letter-spacing:.07em;text-transform:uppercase;position:relative;overflow:hidden}
+.btn-refresh::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(var(--accR),var(--accG),var(--accB),.1),transparent);transform:translateX(-100%);transition:transform .5s}
+.btn-refresh:hover::after{transform:translateX(100%)}
+.btn-refresh:hover{border-color:var(--acc);box-shadow:0 0 24px rgba(var(--accR),var(--accG),var(--accB),.18)}
+
+/* ═══════════════ SETTINGS MODAL ═══════════════ */
+.modal-overlay{position:fixed;inset:0;z-index:800;background:rgba(4,4,12,.7);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{position:fixed;top:76px;right:16px;z-index:801;width:min(460px,95vw);max-height:min(85vh,780px);background:rgba(8,8,20,.97);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.18);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(var(--accR),var(--accG),var(--accB),.06);display:flex;flex-direction:column;transform:translateY(-12px) scale(.97);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.23,1,.32,1)}
+.modal-box.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.modal-head{padding:18px 20px 14px;border-bottom:1px solid var(--bdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--fh);font-size:20px;letter-spacing:.08em;color:var(--acc)}
+.modal-close{width:30px;height:30px;background:rgba(255,255,255,.06);border:none;border-radius:8px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.modal-close:hover{background:rgba(255,255,255,.12);color:var(--txt)}
+.modal-body{flex:1;overflow-y:auto;padding:16px 20px 20px}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:4px}
+
+/* Modal sections */
+.msec{margin-bottom:24px}
+.msec:last-child{margin-bottom:0}
+.msec-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.msec-label::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* LANGUAGE GRID */
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.lang-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid var(--bdr);background:rgba(255,255,255,.02);cursor:pointer;transition:all .18s}
+.lang-item:hover{background:rgba(255,255,255,.06);border-color:rgba(var(--accR),var(--accG),var(--accB),.25)}
+.lang-item.active{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.35)}
+.lang-flag{font-size:20px;line-height:1}
+.lang-info{min-width:0}
+.lang-code{font-family:var(--fm);font-size:11px;color:var(--acc);font-weight:500}
+.lang-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* COLOR THEME GRID */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.theme-item{padding:12px;border-radius:12px;border:1px solid var(--bdr);background:rgba(255,255,255,.02);cursor:pointer;transition:all .22s;text-align:center}
+.theme-item:hover{border-color:rgba(255,255,255,.2);transform:translateY(-2px)}
+.theme-item.active{border-width:1.5px}
+.theme-swatch{width:36px;height:36px;border-radius:10px;margin:0 auto 8px;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.theme-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#000;font-size:16px;font-weight:700;opacity:0;transition:opacity .2s}
+.theme-item.active .theme-swatch::after{opacity:1}
+.theme-label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.theme-item.active .theme-label{color:var(--txt)}
+
+/* CURRENCY MODAL — same pattern */
+.cm-head{padding:20px 20px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.cm-title{font-family:var(--fh);font-size:22px;letter-spacing:.08em;color:var(--acc);margin-bottom:4px}
+.cm-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.cm-sub strong{color:var(--cyan)}
+.cm-search{position:relative;margin-top:12px}
+.cm-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.cm-search input{width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-family:var(--fr);font-size:13px;outline:none;transition:border-color .2s}
+.cm-search input:focus{border-color:rgba(var(--accR),var(--accG),var(--accB),.4)}
+.cm-search input::placeholder{color:var(--muted)}
+.cm-tabs{display:flex;gap:4px;padding:12px 20px 0;flex-shrink:0;flex-wrap:wrap}
+.cm-tab{padding:5px 12px;border-radius:7px;background:transparent;border:1px solid var(--bdr);color:var(--muted);font-family:var(--fr);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s}
+.cm-tab:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.cm-tab.on{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc)}
+.cm-list{flex:1;overflow-y:auto;padding:12px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start}
+.cm-list::-webkit-scrollbar{width:4px}
+.cm-list::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:4px}
+.cm-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:rgba(255,255,255,.02);cursor:pointer;transition:all .18s;position:relative}
+.cm-item:hover{background:rgba(255,255,255,.06);border-color:var(--bdr)}
+.cm-item.selected{background:rgba(var(--accR),var(--accG),var(--accB),.08);border-color:rgba(var(--accR),var(--accG),var(--accB),.3)}
+.cm-item.selected::after{content:'✓';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--acc);font-size:12px;font-weight:700}
+.ci-flag{font-size:20px;line-height:1;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-code{font-family:var(--fm);font-size:12px;color:var(--acc);font-weight:500}
+.ci-name{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ci-factor{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.cf-cheap{background:rgba(29,185,84,.15);color:#4ade80}
+.cf-mid{background:rgba(var(--accR),var(--accG),var(--accB),.12);color:var(--acc)}
+.cf-norm{background:rgba(255,255,255,.06);color:var(--muted)}
+.cf-exp{background:rgba(239,68,68,.12);color:#f87171}
+.cm-footer{padding:12px 20px;border-top:1px solid var(--bdr);flex-shrink:0}
+.cm-footer-note{font-size:11px;color:var(--muted);line-height:1.4}
+.ppp-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(0,245,255,.08);border:1px solid rgba(0,245,255,.2);border-radius:6px;font-size:11px;color:var(--cyan);font-weight:600}
+
+/* ── HERO ── */
+#hero-section{position:relative;min-height:90vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+#hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 20%;transition:opacity 1s}
+#hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,4,12,1) 0%,rgba(4,4,12,.6) 40%,rgba(4,4,12,.2) 80%,transparent 100%),linear-gradient(90deg,rgba(4,4,12,.85) 0%,rgba(4,4,12,.3) 50%,transparent 100%)}
+.hero-content{position:relative;z-index:2;padding:0 48px 56px;max-width:820px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;border:1px solid rgba(var(--accR),var(--accG),var(--accB),.35);border-radius:4px;background:rgba(var(--accR),var(--accG),var(--accB),.08);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);margin-bottom:20px;white-space:nowrap}
+.hero-eyebrow span:first-child{width:6px;height:6px;flex-shrink:0;background:var(--acc);border-radius:50%;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#hero-title{font-family:var(--fh);font-size:clamp(40px,6vw,80px);line-height:1;letter-spacing:.02em;color:#fff;margin-bottom:18px;text-shadow:0 0 80px rgba(var(--accR),var(--accG),var(--accB),.2)}
+.hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.hero-tag{padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid var(--bdr);font-size:12px;color:#888;letter-spacing:.05em}
+.hero-meta{display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+.score-box{padding:6px 12px;border-radius:8px;font-family:var(--fm);font-size:18px;font-weight:500}
+.score-g{background:#1db954;color:#fff}.score-y{background:#f59e0b;color:#000}
+.hero-price-block{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.hero-badge{font-family:var(--fh);font-size:40px;line-height:1;color:#000;background:var(--acc);padding:4px 14px;border-radius:6px;box-shadow:0 0 40px rgba(var(--accR),var(--accG),var(--accB),.45)}
+.hero-sale{font-family:var(--fm);font-size:36px;color:var(--acc)}
+.hero-orig{font-family:var(--fm);font-size:18px;color:var(--muted);text-decoration:line-through}
+.hero-ppp-note{font-size:12px;color:var(--cyan);padding:4px 10px;background:rgba(0,245,255,.08);border:1px solid rgba(0,245,255,.2);border-radius:6px;align-self:baseline}
+.hero-actions{display:flex;gap:14px}
+.btn-hp{display:flex;align-items:center;gap:10px;padding:14px 28px;background:var(--acc);border:none;border-radius:8px;color:#000;font-family:var(--fr);font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all .25s;box-shadow:0 0 30px rgba(var(--accR),var(--accG),var(--accB),.3)}
+.btn-hp:hover{filter:brightness(1.12);box-shadow:0 0 50px rgba(var(--accR),var(--accG),var(--accB),.5);transform:translateY(-2px)}
+.btn-hs{display:flex;align-items:center;gap:10px;padding:14px 24px;background:rgba(255,255,255,.06);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-family:var(--fr);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .25s}
+.btn-hs:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+
+/* ── STATS ── */
+.stat-strip{display:flex;gap:1px;padding:0 48px;margin:40px 0 32px}
+.stat-item{flex:1;padding:14px 20px;background:var(--card);border:1px solid var(--bdr);text-align:center}
+.stat-item:first-child{border-radius:12px 0 0 12px}.stat-item:last-child{border-radius:0 12px 12px 0}
+.sv{font-family:var(--fh);font-size:28px;color:var(--acc)}.sl{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+
+/* ── SECTION HEADERS ── */
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;padding:0 48px;margin-bottom:24px}
+.section-title{font-family:var(--fh);font-size:clamp(28px,3.5vw,44px);letter-spacing:.06em;line-height:1}
+.al{color:var(--acc)}.ag{color:var(--gold)}.ac{color:var(--cyan)}
+.section-sub{font-size:13px;color:var(--muted);letter-spacing:.05em;margin-top:6px}
+.section-count{font-family:var(--fm);font-size:12px;color:var(--muted)}
+.section-count strong{color:var(--acc);font-size:22px;display:block;text-align:right}
+.divider{height:1px;margin:48px 48px;background:linear-gradient(90deg,transparent,var(--bdr) 20%,var(--bdr) 80%,transparent)}
+
+/* ── FREE SECTION ── */
+#free-section{padding:48px 0 0}
+.free-scroll-wrap{padding:0 48px;overflow-x:auto;scroll-behavior:smooth;-ms-overflow-style:none;scrollbar-width:none;padding-bottom:20px}
+.free-scroll-wrap::-webkit-scrollbar{display:none}
+.free-row{display:flex;gap:18px;width:max-content}
+.free-card{position:relative;width:300px;flex-shrink:0;background:linear-gradient(135deg,rgba(255,204,0,.06),rgba(255,204,0,.02));border:1px solid rgba(255,204,0,.2);border-radius:14px;overflow:hidden;transition:all .3s cubic-bezier(.23,1,.32,1);cursor:pointer;opacity:0;transform:translateX(30px);animation:slix .5s cubic-bezier(.23,1,.32,1) forwards}
+@keyframes slix{to{opacity:1;transform:translateX(0)}}
+.free-card:hover{border-color:rgba(255,204,0,.5);box-shadow:0 0 40px rgba(255,204,0,.12),0 12px 40px rgba(0,0,0,.4);transform:translateY(-4px)}
+.free-card .fc-img-wrap{position:relative;aspect-ratio:16/7;overflow:hidden}
+.free-card .fc-img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.free-card:hover .fc-img{transform:scale(1.06)}
+.fc-img-overlay{position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(4,4,12,.95))}
+.fc-free-badge{position:absolute;top:10px;left:10px;background:var(--gold);color:#000;font-family:var(--fh);font-size:16px;padding:3px 12px;border-radius:6px;box-shadow:0 4px 20px rgba(255,204,0,.5)}
+.fc-body{padding:12px 14px 14px}
+.fc-title{font-family:var(--fr);font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-meta{font-size:12px;color:var(--muted);margin-top:4px}
+.fc-cta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:9px;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.25);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;text-decoration:none;letter-spacing:.06em;text-transform:uppercase;transition:all .2s}
+.fc-cta:hover{background:rgba(255,204,0,.2);box-shadow:0 0 20px rgba(255,204,0,.15)}
+.scroll-arrow{display:flex;gap:10px;margin-top:16px;padding:0 48px}
+.scroll-arrow button{width:40px;height:40px;background:var(--card);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:16px}
+.scroll-arrow button:hover{background:var(--cardhv);border-color:rgba(255,204,0,.3);color:var(--gold)}
+
+/* ── FILTER BAR ── */
+#filter-bar{position:sticky;top:68px;z-index:90;padding:14px 48px;background:rgba(4,4,12,.92);backdrop-filter:blur(24px) saturate(150%);border-bottom:1px solid var(--bdr);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.fg{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:10px;padding:4px 6px}
+.fg-lbl{font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;padding:4px 8px;white-space:nowrap}
+.chip{padding:6px 14px;border-radius:7px;background:transparent;border:none;color:var(--muted);font-family:var(--fr);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;letter-spacing:.03em}
+.chip:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.chip.on{background:rgba(var(--accR),var(--accG),var(--accB),.12);color:var(--acc)}
+.chip-sep{width:1px;height:18px;background:var(--bdr);margin:0 2px}
+.search-box{flex:1;min-width:180px;max-width:280px;position:relative}
+.search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-box input{width:100%;padding:9px 12px 9px 36px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-family:var(--fr);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search-box input::placeholder{color:var(--muted)}
+.search-box input:focus{border-color:rgba(var(--accR),var(--accG),var(--accB),.4);box-shadow:0 0 0 3px rgba(var(--accR),var(--accG),var(--accB),.07)}
+
+/* ── RESULTS / GRID ── */
+.results-bar{padding:14px 48px;display:flex;align-items:center;gap:14px}
+.rc{font-family:var(--fm);font-size:12px;color:var(--muted)}
+.rc strong{color:var(--acc);font-size:16px}
+.fetch-status{font-family:var(--fm);font-size:11px;color:var(--purple);display:flex;align-items:center;gap:6px}
+.fdot{width:6px;height:6px;background:var(--acc);border-radius:50%;animation:blink .8s step-end infinite}
+#grid-wrap{padding:4px 48px 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+
+/* ── GAME CARD ── */
+.gcard{background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.23,1,.32,1);opacity:0;transform:translateY(24px);animation:crise .45s cubic-bezier(.23,1,.32,1) forwards;position:relative;display:flex;flex-direction:column}
+@keyframes crise{to{opacity:1;transform:translateY(0)}}
+.gcard:hover{border-color:rgba(var(--accR),var(--accG),var(--accB),.25);box-shadow:0 0 0 1px rgba(var(--accR),var(--accG),var(--accB),.1),0 20px 60px rgba(0,0,0,.5);transform:translateY(-5px) scale(1.01)}
+.gcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--accR),var(--accG),var(--accB),.04),transparent 50%);opacity:0;transition:opacity .3s;pointer-events:none;border-radius:inherit}
+.gcard:hover::before{opacity:1}
+.gcard-img-wrap{position:relative;aspect-ratio:16/7;overflow:hidden;flex-shrink:0}
+.gcard-img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.23,1,.32,1);display:block}
+.gcard:hover .gcard-img{transform:scale(1.07)}
+.gcard-img-fb{display:none;width:100%;height:100%;background:linear-gradient(135deg,#0f0f2a,#1a1a3e);align-items:center;justify-content:center;font-size:36px}
+.gcard-overlay{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(transparent,rgba(4,4,12,.95))}
+.disc-badge{position:absolute;top:10px;left:10px;font-family:var(--fh);font-size:18px;padding:3px 10px;border-radius:6px;background:var(--acc);color:#000;box-shadow:0 4px 16px rgba(var(--accR),var(--accG),var(--accB),.4)}
+.meta-badge{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:12px;font-weight:500}
+.mb-g{background:#1db954;color:#fff}.mb-y{background:#f59e0b;color:#000}.mb-r{background:#ef4444;color:#fff}.mb-n{background:rgba(255,255,255,.08);color:var(--muted);font-size:9px}
+.gcard-body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column}
+.gcard-title{font-family:var(--fr);font-size:15px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.gcard-rating{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;width:fit-content}
+.gr-h{background:rgba(29,185,84,.15);color:#4ade80}.gr-m{background:rgba(245,158,11,.15);color:#fbbf24}.gr-l{background:rgba(239,68,68,.15);color:#f87171}.gr-n{background:rgba(255,255,255,.05);color:var(--muted)}
+.stars-sm{letter-spacing:1px;font-size:9px}
+.gcard-price{display:flex;align-items:baseline;gap:8px;margin-top:auto;padding-top:12px;flex-wrap:wrap}
+.price-now{font-family:var(--fm);font-size:20px;color:var(--acc)}
+.price-was{font-family:var(--fm);font-size:12px;color:var(--muted);text-decoration:line-through}
+.price-save{font-size:11px;color:#4ade80;margin-left:auto;font-weight:700}
+.price-ppp{font-size:10px;color:var(--cyan);opacity:.8;width:100%;margin-top:2px}
+.gcard-cta{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;padding:8px;background:rgba(var(--accR),var(--accG),var(--accB),.08);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.18);border-radius:8px;color:var(--acc);font-size:12px;font-weight:700;text-decoration:none;letter-spacing:.07em;text-transform:uppercase;transition:all .2s}
+.gcard-cta:hover{background:rgba(var(--accR),var(--accG),var(--accB),.16);box-shadow:0 0 20px rgba(var(--accR),var(--accG),var(--accB),.12)}
+
+/* ── SKELETONS ── */
+.gcard-sk{background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;opacity:.5}
+.sk{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:6px}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-img{height:135px;border-radius:0}.sk-bd{padding:12px 14px 14px}.sk-line{height:14px;margin-bottom:8px}.sk-short{width:55%}.sk-p{height:22px;width:90px;margin-top:14px}
+
+/* ── LOAD MORE / BTT / NOTIF ── */
+#load-more-wrap{text-align:center;padding:20px 0 60px}
+.btn-lm{padding:12px 36px;background:transparent;border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);border-radius:10px;color:var(--acc);font-family:var(--fr);font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:10px}
+.btn-lm:hover{background:rgba(var(--accR),var(--accG),var(--accB),.08);border-color:var(--acc);box-shadow:0 0 30px rgba(var(--accR),var(--accG),var(--accB),.15)}
+#btt{position:fixed;bottom:28px;right:28px;width:48px;height:48px;background:rgba(var(--accR),var(--accG),var(--accB),.1);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);border-radius:12px;color:var(--acc);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(20px);z-index:200;opacity:0;transform:translateY(12px);transition:all .25s}
+#btt.v{opacity:1;transform:translateY(0)}
+#btt:hover{background:rgba(var(--accR),var(--accG),var(--accB),.2);box-shadow:0 0 24px rgba(var(--accR),var(--accG),var(--accB),.2)}
+#notif{position:fixed;top:80px;right:24px;padding:12px 20px;border-radius:10px;background:rgba(var(--accR),var(--accG),var(--accB),.1);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc);font-size:13px;font-weight:700;letter-spacing:.05em;z-index:500;opacity:0;transform:translateY(-8px);transition:all .3s;backdrop-filter:blur(20px);pointer-events:none;max-width:320px}
+#notif.show{opacity:1;transform:translateY(0)}
+
+/* ── FREE MODAL ── */
+#free-modal{
+  position:fixed;inset:0;z-index:850;
+  display:flex;flex-direction:column;
+  background:rgba(6,6,18,.97);
+  transform:translateY(100%);opacity:0;pointer-events:none;
+  transition:all .4s cubic-bezier(.23,1,.32,1);
+}
+#free-modal.open{transform:translateY(0);opacity:1;pointer-events:all}
+
+.fm-head{
+  padding:20px 32px 16px;
+  border-bottom:1px solid rgba(255,204,0,.15);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  background:linear-gradient(135deg,rgba(255,204,0,.06),rgba(255,204,0,.02));
+}
+.fm-head-left{}
+.fm-title{font-family:var(--fh);font-size:28px;letter-spacing:.07em;color:var(--gold)}
+.fm-sub{font-size:13px;color:var(--muted);margin-top:3px}
+.fm-head-right{display:flex;align-items:center;gap:14px}
+.fm-count-badge{
+  font-family:var(--fh);font-size:32px;color:var(--gold);
+  padding:4px 16px;border-radius:10px;
+  background:rgba(255,204,0,.12);border:1px solid rgba(255,204,0,.25);
+  line-height:1;
+}
+.fm-search-bar{
+  padding:14px 32px;border-bottom:1px solid var(--bdr);
+  display:flex;gap:12px;align-items:center;flex-shrink:0;
+  flex-wrap:wrap;
+  background:rgba(4,4,12,.6);
+}
+.fm-sort-pills{display:flex;gap:6px;flex-wrap:wrap}
+.fm-body{
+  flex:1;overflow-y:auto;
+  padding:20px 32px 32px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+  align-content:start;
+}
+.fm-body::-webkit-scrollbar{width:5px}
+.fm-body::-webkit-scrollbar-thumb{background:rgba(255,204,0,.2);border-radius:4px}
+
+/* Free game card inside modal */
+.fgcard{
+  background:linear-gradient(135deg,rgba(255,204,0,.05),rgba(255,204,0,.02));
+  border:1px solid rgba(255,204,0,.18);border-radius:14px;overflow:hidden;
+  cursor:pointer;transition:all .28s cubic-bezier(.23,1,.32,1);
+  display:flex;flex-direction:column;
+  opacity:0;transform:scale(.95);
+  animation:fgpop .4s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes fgpop{to{opacity:1;transform:scale(1)}}
+.fgcard:hover{border-color:rgba(255,204,0,.5);box-shadow:0 0 30px rgba(255,204,0,.14),0 10px 40px rgba(0,0,0,.5);transform:translateY(-4px) scale(1.01)}
+.fgcard-img-wrap{position:relative;aspect-ratio:16/7;overflow:hidden;flex-shrink:0}
+.fgcard-img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.fgcard:hover .fgcard-img{transform:scale(1.07)}
+.fgcard-img-fb{display:none;width:100%;height:100%;background:linear-gradient(135deg,#1a1000,#2a1f00);align-items:center;justify-content:center;font-size:36px}
+.fgcard-ov{position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(4,4,12,.96))}
+.fgcard-free-tag{position:absolute;top:10px;left:10px;background:var(--gold);color:#000;font-family:var(--fh);font-size:17px;padding:3px 12px;border-radius:6px;box-shadow:0 4px 20px rgba(255,204,0,.55);letter-spacing:.04em}
+.fgcard-meta-badge{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:12px;font-weight:500}
+.fgcard-orig{position:absolute;bottom:8px;right:10px;font-family:var(--fm);font-size:11px;color:rgba(255,204,0,.6);text-decoration:line-through}
+.fgcard-body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column}
+.fgcard-title{font-family:var(--fr);font-size:15px;font-weight:700;line-height:1.3;color:var(--txt);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fgcard-rating{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;width:fit-content;margin-bottom:auto}
+.fgcard-cta{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:12px;padding:10px;
+  background:rgba(255,204,0,.12);border:1px solid rgba(255,204,0,.3);
+  border-radius:10px;color:var(--gold);font-size:13px;font-weight:700;
+  text-decoration:none;letter-spacing:.07em;text-transform:uppercase;
+  transition:all .2s;
+}
+.fgcard-cta:hover{background:rgba(255,204,0,.22);box-shadow:0 0 24px rgba(255,204,0,.2)}
+
+/* Loading spinner */
+.fm-loading{
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:60px;color:var(--muted);font-size:14px;
+}
+.fm-spinner{
+  width:40px;height:40px;border-radius:50%;
+  border:3px solid rgba(255,204,0,.15);
+  border-top-color:var(--gold);
+  animation:spin .8s linear infinite;
+}
+
+.fm-empty{
+  grid-column:1/-1;text-align:center;padding:60px 20px;
+  color:var(--muted);font-size:14px;
+}
+.fm-empty .em-icon{font-size:48px;display:block;margin-bottom:12px}
+.fm-empty strong{display:block;font-family:var(--fh);font-size:22px;color:var(--txt);margin-bottom:6px}
+
+.fm-footer{
+  padding:12px 32px;border-top:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;flex-wrap:wrap;gap:8px;
+  background:rgba(4,4,12,.8);
+}
+.fm-footer-note{font-family:var(--fm);font-size:12px;color:var(--muted)}
+.fm-footer-note strong{color:var(--gold)}
+.fm-save-hint{font-size:12px;color:var(--muted)}
+
+/* See-all button */
+.btn-see-all{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:10px 22px;
+  background:linear-gradient(135deg,rgba(255,204,0,.12),rgba(255,204,0,.06));
+  border:1px solid rgba(255,204,0,.3);border-radius:10px;
+  color:var(--gold);font-family:var(--fr);font-size:14px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  transition:all .25s;white-space:nowrap;
+}
+.btn-see-all:hover{background:linear-gradient(135deg,rgba(255,204,0,.22),rgba(255,204,0,.1));border-color:var(--gold);box-shadow:0 0 28px rgba(255,204,0,.2);transform:translateY(-1px)}
+.btn-count-pill{
+  padding:2px 10px;border-radius:20px;
+  background:rgba(255,204,0,.2);border:1px solid rgba(255,204,0,.3);
+  font-family:var(--fm);font-size:12px;color:var(--gold);
+}
+
+@media(max-width:768px){
+  header,.section-header,#filter-bar,.results-bar,#grid-wrap,.stat-strip,.hero-content,.free-scroll-wrap,.divider{padding-left:16px;padding-right:16px}
+  .hero-eyebrow{font-size:9px;letter-spacing:.05em;padding:5px 10px}
+  #grid-wrap{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .stat-strip{flex-wrap:wrap;gap:8px}.stat-item{border-radius:10px!important;min-width:calc(50% - 4px)}
+  .cm-list,.lang-grid,.theme-grid{grid-template-columns:1fr}
+  #timer-display{display:none}
+  .hdr-btn .btn-label{display:none}
+  .fm-head{padding:16px 18px 14px}.fm-search-bar,.fm-footer{padding-left:18px;padding-right:18px}
+  .fm-body{padding:16px 18px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .fm-title{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<div class="cdot" id="cdot"></div>
+<div class="cring" id="cring"></div>
+<div class="bg-fixed">
+  <canvas id="stars"></canvas>
+  <div class="nebula"></div>
+  <div class="grid-bg"></div>
+  <div class="grain"></div>
+</div>
+<div id="pbar" style="width:0;opacity:0"></div>
+<div id="notif"></div>
+
+<!-- ═══ CURRENCY MODAL ═══ -->
+<div class="modal-overlay" id="cur-overlay" onclick="closeCur()"></div>
+<div class="modal-box" id="cur-modal" style="max-height:min(85vh,700px)">
+  <div class="cm-head">
+    <div class="cm-title" data-i18n="curTitle">Валюта и регион</div>
+    <div class="cm-sub"><span class="ppp-badge">💡 PPP</span> <span data-i18n="curSub">Цены учитывают региональное ценообразование Steam</span></div>
+    <div class="cm-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="cur-search" oninput="filterCurList()" data-i18n-ph="search">
+    </div>
+  </div>
+  <div class="cm-tabs" id="cm-tabs">
+    <button class="cm-tab on" data-g="all"  onclick="setGroup(this,'all')"  data-i18n="all">Все</button>
+    <button class="cm-tab" data-g="cis"  onclick="setGroup(this,'cis')">🇷🇺 СНГ</button>
+    <button class="cm-tab" data-g="eu"   onclick="setGroup(this,'eu')">🇪🇺 Европа</button>
+    <button class="cm-tab" data-g="asia" onclick="setGroup(this,'asia')">🌏 Азия</button>
+    <button class="cm-tab" data-g="am"   onclick="setGroup(this,'am')">🌎 Америка</button>
+    <button class="cm-tab" data-g="me"   onclick="setGroup(this,'me')">🌍 Ближний Восток</button>
+    <button class="cm-tab" data-g="oth"  onclick="setGroup(this,'oth')">🌐 Прочие</button>
+  </div>
+  <div class="cm-list" id="cm-list"></div>
+  <div class="cm-footer">
+    <div class="cm-footer-note" data-i18n="pppNote">🟢 = Steam дешевле USA · ⚪ = Как USA · 🔴 = Дороже USA</div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal-overlay" id="set-overlay" onclick="closeSettings()"></div>
+<div class="modal-box" id="set-modal">
+  <div class="modal-head">
+    <div class="modal-title" data-i18n="settings">Настройки</div>
+    <button class="modal-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="modal-body">
+
+    <!-- LANGUAGE -->
+    <div class="msec">
+      <div class="msec-label">🌐 <span data-i18n="language">Язык интерфейса</span></div>
+      <div class="lang-grid" id="lang-grid"></div>
+    </div>
+
+    <!-- COLOR THEME -->
+    <div class="msec">
+      <div class="msec-label">🎨 <span data-i18n="colorTheme">Цветовая тема</span></div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- SAVE NOTE -->
+    <div style="margin-top:18px;padding:12px;background:rgba(var(--accR),var(--accG),var(--accB),.06);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.15);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.5">
+      💾 <span data-i18n="saveNote">Все настройки сохраняются автоматически в браузере</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <div>
+      <div class="logo-name">STEAM DEALS</div>
+      <div class="logo-sub" data-i18n="logoSub">Горящие скидки · Топовые игры</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div id="timer-display">
+      <span data-i18n="updated">Обновлено</span>: <em id="upd-time">—</em><br>
+      <span id="countdown" style="color:var(--muted)"></span>
+    </div>
+
+    <!-- Currency -->
+    <button class="hdr-btn" id="cur-btn" onclick="toggleCur()">
+      <span id="cur-flag" style="font-size:18px">🇺🇸</span>
+      <span id="cur-code" style="font-family:var(--fm);font-size:13px">USD</span>
+      <span class="arr">▼</span>
+    </button>
+
+    <!-- Settings -->
+    <button class="hdr-btn" id="set-btn" onclick="toggleSettings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="btn-label" data-i18n="settings">Настройки</span>
+    </button>
+
+    <!-- Refresh -->
+    <button class="hdr-btn btn-refresh" id="refreshBtn" onclick="startFetch(true)">
+      <svg id="rIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      <span class="btn-label" data-i18n="refresh">Обновить</span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="hero-section">
+  <div id="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span></span><span data-i18n="gameOfDay">Игра дня · Лучшая сделка</span></div>
+    <div id="hero-title">...</div>
+    <div class="hero-tags" id="hero-tags"></div>
+    <div class="hero-meta" id="hero-meta"></div>
+    <div class="hero-price-block" id="hero-price"></div>
+    <div class="hero-actions" id="hero-actions"></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stat-strip">
+  <div class="stat-item"><div class="sv" id="s-total">—</div><div class="sl" data-i18n="totalGames">Всего игр</div></div>
+  <div class="stat-item"><div class="sv" id="s-free">—</div><div class="sl" data-i18n="freeGames">Бесплатно</div></div>
+  <div class="stat-item"><div class="sv" id="s-maxd">—</div><div class="sl" data-i18n="maxDisc">Макс. скидка</div></div>
+  <div class="stat-item"><div class="sv" id="s-avgd">—</div><div class="sl" data-i18n="avgDisc">Средняя скидка</div></div>
+</div>
+
+<!-- FREE GAMES MODAL OVERLAY -->
+<div class="modal-overlay" id="free-overlay" onclick="closeFreeModal()"></div>
+<div id="free-modal">
+  <div class="fm-head">
+    <div class="fm-head-left">
+      <div class="fm-title">🆓 <span data-i18n="freeNow">Бесплатные прямо сейчас</span></div>
+      <div class="fm-sub" data-i18n="freeSub">Скидка 100% — забирай пока дают</div>
+    </div>
+    <div class="fm-head-right">
+      <span class="fm-count-badge" id="fm-badge">0</span>
+      <button class="modal-close" onclick="closeFreeModal()">✕</button>
+    </div>
+  </div>
+  <div class="fm-search-bar">
+    <div class="search-box" style="max-width:100%;flex:1">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="free-search" oninput="filterFreeGames()" data-i18n-ph="searchGame" placeholder="Поиск...">
+    </div>
+    <div class="fm-sort-pills" id="fm-sort-pills">
+      <button class="chip on" data-fs="default" onclick="setFreeSort(this,'default')" data-i18n="all">Все</button>
+      <button class="chip" data-fs="meta" onclick="setFreeSort(this,'meta')">Metacritic ↓</button>
+      <button class="chip" data-fs="rating" onclick="setFreeSort(this,'rating')" data-i18n="sortRating">Рейтинг ↓</button>
+      <button class="chip" data-fs="name" onclick="setFreeSort(this,'name')">A → Z</button>
+    </div>
+  </div>
+  <div class="fm-body" id="fm-body">
+    <div class="fm-loading" id="fm-loading">
+      <div class="fm-spinner"></div>
+      <span data-i18n="loading">Загружаю...</span>
+    </div>
+  </div>
+  <div class="fm-footer">
+    <span class="fm-footer-note" id="fm-footer-note"></span>
+    <span class="fm-save-hint">💡 <span data-i18n="freeSub">Скидка 100% — забирай пока дают</span></span>
+  </div>
+</div>
+
+<!-- FREE SECTION TEASER (in page) -->
+<section id="free-section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">🆓 <span class="ag" data-i18n="freeNow">Бесплатные прямо сейчас</span></div>
+      <div class="section-sub" data-i18n="freeSub">Скидка 100% — забирай пока дают</div>
+    </div>
+    <div class="section-count"><strong id="free-count">0</strong> <span data-i18n="games">игр</span></div>
+  </div>
+  <!-- TEASER CARDS strip -->
+  <div class="free-scroll-wrap" id="free-row-wrap"><div class="free-row" id="free-row"></div></div>
+  <div style="padding:16px 48px 0;display:flex;gap:12px;align-items:center">
+    <div class="scroll-arrow" style="padding:0;margin:0">
+      <button onclick="scrollFree(-1)">&#8592;</button>
+      <button onclick="scrollFree(1)">&#8594;</button>
+    </div>
+    <button class="btn-see-all" id="btn-open-free" onclick="openFreeModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span data-i18n="seeAll">Смотреть все бесплатные</span>
+      <span class="btn-count-pill" id="btn-free-count">0</span>
+    </button>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DEALS -->
+<section>
+  <div class="section-header">
+    <div>
+      <div class="section-title">🔥 <span data-i18n="allDeals">Все скидки</span></div>
+      <div class="section-sub" data-i18n="dealsSub">Только проверенные игры — без ноунейма</div>
+    </div>
+    <div class="section-count"><strong id="shown-count">0</strong> <span data-i18n="shown">показано</span></div>
+  </div>
+
+  <div id="filter-bar">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" oninput="applyFilters()" data-i18n-ph="searchGame">
+    </div>
+    <div class="fg">
+      <span class="fg-lbl" data-i18n="discount">Скидка</span><div class="chip-sep"></div>
+      <button class="chip on" data-f="disc" data-v="0"  onclick="setF('disc',this)" data-i18n="all">Все</button>
+      <button class="chip" data-f="disc" data-v="50" onclick="setF('disc',this)">50%+</button>
+      <button class="chip" data-f="disc" data-v="70" onclick="setF('disc',this)">70%+</button>
+      <button class="chip" data-f="disc" data-v="80" onclick="setF('disc',this)">80%+</button>
+      <button class="chip" data-f="disc" data-v="90" onclick="setF('disc',this)">90%+</button>
+    </div>
+    <div class="fg">
+      <span class="fg-lbl" data-i18n="price">Цена</span><div class="chip-sep"></div>
+      <button class="chip on" data-f="price" data-v="9999" onclick="setF('price',this)" data-i18n="any">Любая</button>
+      <button class="chip" data-f="price" data-v="5"    onclick="setF('price',this)" data-i18n="upto5">до $5</button>
+      <button class="chip" data-f="price" data-v="10"   onclick="setF('price',this)" data-i18n="upto10">до $10</button>
+      <button class="chip" data-f="price" data-v="20"   onclick="setF('price',this)" data-i18n="upto20">до $20</button>
+    </div>
+    <div class="fg">
+      <span class="fg-lbl" data-i18n="sort">Сорт.</span><div class="chip-sep"></div>
+      <button class="chip on" data-f="sort" data-v="savings" onclick="setF('sort',this)" data-i18n="sortDisc">Скидка</button>
+      <button class="chip" data-f="sort" data-v="price"   onclick="setF('sort',this)" data-i18n="sortPrice">Цена ↑</button>
+      <button class="chip" data-f="sort" data-v="meta"    onclick="setF('sort',this)">Metacritic</button>
+      <button class="chip" data-f="sort" data-v="rating"  onclick="setF('sort',this)" data-i18n="sortRating">Рейтинг</button>
+    </div>
+  </div>
+
+  <div class="results-bar">
+    <span class="rc"><span data-i18n="shown">Показано</span>: <strong id="shown-count2">0</strong></span>
+    <span class="fetch-status" id="fetch-status" style="display:none">
+      <span class="fdot"></span> <span data-i18n="loading">Загружаю...</span>
+    </span>
+  </div>
+  <div id="grid-wrap"></div>
+  <div id="load-more-wrap" style="display:none">
+    <button class="btn-lm" onclick="renderNextBatch()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      <span data-i18n="loadMore">Показать ещё</span>
+    </button>
+  </div>
+</section>
+
+<div id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// THEMES
+// ════════════════════════════════════════════════════
+const THEMES = {
+  lime:   {acc:'#c8ff00', r:200, g:255, b:0,   name:'Lime',   emoji:'🟢'},
+  cyan:   {acc:'#00e5ff', r:0,   g:229, b:255,  name:'Cyan',   emoji:'🔵'},
+  blue:   {acc:'#4d9eff', r:77,  g:158, b:255,  name:'Blue',   emoji:'💙'},
+  purple: {acc:'#c084fc', r:192, g:132, b:252,  name:'Purple', emoji:'💜'},
+  orange: {acc:'#ff8c42', r:255, g:140, b:66,   name:'Orange', emoji:'🔶'},
+  pink:   {acc:'#ff5fa0', r:255, g:95,  b:160,  name:'Pink',   emoji:'🩷'},
+  red:    {acc:'#ff4060', r:255, g:64,  b:96,   name:'Red',    emoji:'❤️'},
+  gold:   {acc:'#ffcc00', r:255, g:204, b:0,    name:'Gold',   emoji:'✨'},
+};
+
+// ════════════════════════════════════════════════════
+// LANGUAGES
+// ════════════════════════════════════════════════════
+const LANGS = {
+  ru: {
+    flag:'🇷🇺', code:'RU', name:'Русский',
+    logoSub:'Горящие скидки · Топовые игры',
+    curTitle:'Валюта и регион', curSub:'Цены учитывают региональное ценообразование Steam',
+    search:'Поиск валюты...', searchGame:'Поиск игры...',
+    settings:'Настройки', language:'Язык интерфейса', colorTheme:'Цветовая тема',
+    saveNote:'Все настройки сохраняются автоматически в браузере',
+    updated:'Обновлено', autoIn:'Авто через',
+    refresh:'Обновить', all:'Все', any:'Любая',
+    gameOfDay:'Игра дня · Лучшая сделка',
+    heroTags:['Легендарная','Мировой хит','AAA','Культовая'],
+    freeNow:'Бесплатные прямо сейчас', freeSub:'Скидка 100% — забирай пока дают',
+    getFree:'Получить бесплатно',
+    allDeals:'Все скидки', dealsSub:'Только проверенные игры — без ноунейма',
+    shown:'Показано', games:'игр',
+    discount:'Скидка', price:'Цена', sort:'Сорт.',
+    sortDisc:'Скидка', sortPrice:'Цена ↑', sortRating:'Рейтинг',
+    upto5:'до $5', upto10:'до $10', upto20:'до $20',
+    loadMore:'Показать ещё', loading:'Загружаю...',
+    openSteam:'В Steam', reviews:'Обзоры',
+    getSteam:'Забрать в Steam',
+    noRating:'Нет оценок',
+    pppNote:'🟢 = Steam дешевле USA · ⚪ = Как USA · 🔴 = Дороже USA',
+    totalGames:'Всего игр', freeGames:'Бесплатно', maxDisc:'Макс. скидка', avgDisc:'Средняя скидка',
+    noResults:'Ничего не найдено',
+    cheaper:'дешевле', than:'чем в', same:'Как USD', pricier:'дороже USD',
+    seeAll:'Все бесплатные игры',
+  },
+  en: {
+    flag:'🇺🇸', code:'EN', name:'English',
+    logoSub:'Hot Deals · Top Games',
+    curTitle:'Currency & Region', curSub:'Prices reflect Steam regional pricing',
+    search:'Search currency...', searchGame:'Search game...',
+    settings:'Settings', language:'Interface Language', colorTheme:'Color Theme',
+    saveNote:'All settings are saved automatically in your browser',
+    updated:'Updated', autoIn:'Auto in',
+    refresh:'Refresh', all:'All', any:'Any',
+    gameOfDay:'Game of the Day · Best Deal',
+    heroTags:['Legendary','World Hit','AAA','Iconic'],
+    freeNow:'Free Right Now', freeSub:'100% off — grab it while you can',
+    getFree:'Get for Free',
+    allDeals:'All Deals', dealsSub:'Top-rated games only — no shovelware',
+    shown:'Shown', games:'games',
+    discount:'Discount', price:'Price', sort:'Sort',
+    sortDisc:'Discount', sortPrice:'Price ↑', sortRating:'Rating',
+    upto5:'up to $5', upto10:'up to $10', upto20:'up to $20',
+    loadMore:'Load More', loading:'Loading...',
+    openSteam:'Steam', reviews:'Reviews',
+    getSteam:'Get on Steam',
+    noRating:'No ratings',
+    pppNote:'🟢 = Cheaper than USA · ⚪ = Same as USA · 🔴 = Pricier than USA',
+    totalGames:'Total Games', freeGames:'Free', maxDisc:'Max Discount', avgDisc:'Avg Discount',
+    noResults:'Nothing found',
+    cheaper:'cheaper than', than:'than', same:'Same as USD', pricier:'pricier than USD',
+    seeAll:'All Free Games',
+  },
+  kz: {
+    flag:'🇰🇿', code:'KZ', name:'Қазақша',
+    logoSub:'Ыстық жеңілдіктер · Үздік ойындар',
+    curTitle:'Валюта және аймақ', curSub:'Бағалар Steam аймақтық бағаларын ескереді',
+    search:'Валюта іздеу...', searchGame:'Ойын іздеу...',
+    settings:'Параметрлер', language:'Интерфейс тілі', colorTheme:'Түс тақырыбы',
+    saveNote:'Барлық параметрлер браузерде автоматты түрде сақталады',
+    updated:'Жаңартылды', autoIn:'Авто',
+    refresh:'Жаңарту', all:'Барлығы', any:'Кез келген',
+    gameOfDay:'Күннің ойыны · Үздік ұсыныс',
+    heroTags:['Аңыз','Әлемдік хит','AAA','Классика'],
+    freeNow:'Қазір тегін', freeSub:'100% жеңілдік — алуды ұмытпа',
+    getFree:'Тегін алу',
+    allDeals:'Барлық жеңілдіктер', dealsSub:'Тек тексерілген ойындар',
+    shown:'Көрсетілді', games:'ойын',
+    discount:'Жеңілдік', price:'Баға', sort:'Сұрып.',
+    sortDisc:'Жеңілдік', sortPrice:'Баға ↑', sortRating:'Рейтинг',
+    upto5:'$5 дейін', upto10:'$10 дейін', upto20:'$20 дейін',
+    loadMore:'Тағы көрсету', loading:'Жүктелуде...',
+    openSteam:'Steam', reviews:'Пікірлер',
+    getSteam:'Steam-де алу',
+    noRating:'Бағалар жоқ',
+    pppNote:'🟢 = АҚШ-тан арзан · ⚪ = АҚШ сияқты · 🔴 = АҚШ-тан қымбат',
+    totalGames:'Барлық ойындар', freeGames:'Тегін', maxDisc:'Макс. жеңілдік', avgDisc:'Орта жеңілдік',
+    noResults:'Ештеңе табылмады',
+    cheaper:'арзан', than:'', same:'USD сияқты', pricier:'USD-ден қымбат',
+  },
+  zh: {
+    flag:'🇨🇳', code:'ZH', name:'中文',
+    logoSub:'热门折扣 · 顶级游戏',
+    curTitle:'货币与地区', curSub:'价格反映Steam区域定价',
+    search:'搜索货币...', searchGame:'搜索游戏...',
+    settings:'设置', language:'界面语言', colorTheme:'颜色主题',
+    saveNote:'所有设置自动保存在浏览器中',
+    updated:'更新于', autoIn:'自动刷新',
+    refresh:'刷新', all:'全部', any:'任意',
+    gameOfDay:'今日游戏 · 最佳优惠',
+    heroTags:['传奇','全球大作','AAA','经典'],
+    freeNow:'限时免费', freeSub:'100%折扣 — 快去领取',
+    getFree:'免费获取',
+    allDeals:'全部折扣', dealsSub:'仅限优质游戏',
+    shown:'显示', games:'款游戏',
+    discount:'折扣', price:'价格', sort:'排序',
+    sortDisc:'折扣', sortPrice:'价格 ↑', sortRating:'评分',
+    upto5:'$5以下', upto10:'$10以下', upto20:'$20以下',
+    loadMore:'加载更多', loading:'加载中...',
+    openSteam:'Steam', reviews:'评测',
+    getSteam:'在Steam获取',
+    noRating:'暂无评分',
+    pppNote:'🟢 = 比美国便宜 · ⚪ = 与美国相同 · 🔴 = 比美国贵',
+    totalGames:'游戏总数', freeGames:'免费', maxDisc:'最大折扣', avgDisc:'平均折扣',
+    noResults:'未找到结果',
+    cheaper:'比美国便宜', than:'', same:'与USD相同', pricier:'比USD贵',
+  },
+  de: {
+    flag:'🇩🇪', code:'DE', name:'Deutsch',
+    logoSub:'Heiße Deals · Top Spiele',
+    curTitle:'Währung & Region', curSub:'Preise spiegeln regionale Steam-Preise wider',
+    search:'Währung suchen...', searchGame:'Spiel suchen...',
+    settings:'Einstellungen', language:'Sprache', colorTheme:'Farbthema',
+    saveNote:'Alle Einstellungen werden automatisch gespeichert',
+    updated:'Aktualisiert', autoIn:'Auto in',
+    refresh:'Aktualisieren', all:'Alle', any:'Beliebig',
+    gameOfDay:'Spiel des Tages · Bestes Angebot',
+    heroTags:['Legendär','Welthit','AAA','Ikonisch'],
+    freeNow:'Jetzt kostenlos', freeSub:'100% Rabatt — schnell zugreifen',
+    getFree:'Kostenlos holen',
+    allDeals:'Alle Angebote', dealsSub:'Nur Top-Spiele — kein Ramsch',
+    shown:'Angezeigt', games:'Spiele',
+    discount:'Rabatt', price:'Preis', sort:'Sort.',
+    sortDisc:'Rabatt', sortPrice:'Preis ↑', sortRating:'Bewertung',
+    upto5:'bis $5', upto10:'bis $10', upto20:'bis $20',
+    loadMore:'Mehr laden', loading:'Lädt...',
+    openSteam:'Steam', reviews:'Bewertungen',
+    getSteam:'Bei Steam holen',
+    noRating:'Keine Bewertungen',
+    pppNote:'🟢 = Günstiger als USA · ⚪ = Wie USA · 🔴 = Teurer als USA',
+    totalGames:'Spiele gesamt', freeGames:'Kostenlos', maxDisc:'Max. Rabatt', avgDisc:'Ø Rabatt',
+    noResults:'Nichts gefunden',
+    cheaper:'günstiger als', than:'USA', same:'Wie USD', pricier:'teurer als USD',
+  },
+  tr: {
+    flag:'🇹🇷', code:'TR', name:'Türkçe',
+    logoSub:'Fırsatlar · En İyi Oyunlar',
+    curTitle:'Para Birimi & Bölge', curSub:'Fiyatlar Steam bölgesel fiyatlandırmasını yansıtır',
+    search:'Para birimi ara...', searchGame:'Oyun ara...',
+    settings:'Ayarlar', language:'Arayüz Dili', colorTheme:'Renk Teması',
+    saveNote:'Tüm ayarlar tarayıcınıza otomatik olarak kaydedilir',
+    updated:'Güncellendi', autoIn:'Oto.',
+    refresh:'Yenile', all:'Tümü', any:'Herhangi',
+    gameOfDay:'Günün Oyunu · En İyi Fırsat',
+    heroTags:['Efsanevi','Dünya Hiti','AAA','İkonik'],
+    freeNow:'Şu An Ücretsiz', freeSub:'%100 indirim — hemen al',
+    getFree:'Ücretsiz Al',
+    allDeals:'Tüm İndirimler', dealsSub:'Sadece kaliteli oyunlar',
+    shown:'Gösterilen', games:'oyun',
+    discount:'İndirim', price:'Fiyat', sort:'Sırala',
+    sortDisc:'İndirim', sortPrice:'Fiyat ↑', sortRating:'Puan',
+    upto5:"$5'e kadar", upto10:"$10'a kadar", upto20:"$20'ye kadar",
+    loadMore:'Daha Fazla', loading:'Yükleniyor...',
+    openSteam:'Steam', reviews:'İncelemeler',
+    getSteam:"Steam'de Al",
+    noRating:'Derecelendirme yok',
+    pppNote:'🟢 = ABD\'den ucuz · ⚪ = ABD gibi · 🔴 = ABD\'den pahalı',
+    totalGames:'Toplam Oyun', freeGames:'Ücretsiz', maxDisc:'Maks. İndirim', avgDisc:'Ort. İndirim',
+    noResults:'Sonuç bulunamadı',
+    cheaper:'daha ucuz', than:'', same:'USD ile aynı', pricier:'USD\'den pahalı',
+  },
+  ja: {
+    flag:'🇯🇵', code:'JA', name:'日本語',
+    logoSub:'ホットセール · 人気ゲーム',
+    curTitle:'通貨と地域', curSub:'価格はSteamの地域別価格を反映しています',
+    search:'通貨を検索...', searchGame:'ゲームを検索...',
+    settings:'設定', language:'インターフェース言語', colorTheme:'カラーテーマ',
+    saveNote:'すべての設定はブラウザに自動保存されます',
+    updated:'更新日時', autoIn:'自動更新',
+    refresh:'更新', all:'すべて', any:'すべて',
+    gameOfDay:'今日のゲーム · 最高のお得情報',
+    heroTags:['伝説的','世界的ヒット','AAA','アイコニック'],
+    freeNow:'今すぐ無料', freeSub:'100%オフ — 今すぐゲット',
+    getFree:'無料でもらう',
+    allDeals:'全セール', dealsSub:'厳選された高品質ゲームのみ',
+    shown:'表示中', games:'ゲーム',
+    discount:'割引', price:'価格', sort:'並び替え',
+    sortDisc:'割引', sortPrice:'価格 ↑', sortRating:'評価',
+    upto5:'$5以下', upto10:'$10以下', upto20:'$20以下',
+    loadMore:'もっと見る', loading:'読み込み中...',
+    openSteam:'Steam', reviews:'レビュー',
+    getSteam:'Steamで入手',
+    noRating:'評価なし',
+    pppNote:'🟢 = 米国より安い · ⚪ = 米国と同じ · 🔴 = 米国より高い',
+    totalGames:'総ゲーム数', freeGames:'無料', maxDisc:'最大割引', avgDisc:'平均割引',
+    noResults:'結果が見つかりません',
+    cheaper:'米国より安い', than:'', same:'USDと同じ', pricier:'USDより高い',
+  },
+  ko: {
+    flag:'🇰🇷', code:'KO', name:'한국어',
+    logoSub:'특가 세일 · 인기 게임',
+    curTitle:'통화 및 지역', curSub:'가격은 Steam 지역별 가격 정책을 반영합니다',
+    search:'통화 검색...', searchGame:'게임 검색...',
+    settings:'설정', language:'인터페이스 언어', colorTheme:'색상 테마',
+    saveNote:'모든 설정은 브라우저에 자동으로 저장됩니다',
+    updated:'업데이트됨', autoIn:'자동',
+    refresh:'새로고침', all:'전체', any:'모두',
+    gameOfDay:'오늘의 게임 · 최고의 특가',
+    heroTags:['전설적인','세계적 히트','AAA','아이코닉'],
+    freeNow:'지금 무료', freeSub:'100% 할인 — 지금 바로 받아가세요',
+    getFree:'무료로 받기',
+    allDeals:'모든 특가', dealsSub:'검증된 게임만 — 저품질 없음',
+    shown:'표시됨', games:'개',
+    discount:'할인', price:'가격', sort:'정렬',
+    sortDisc:'할인', sortPrice:'가격 ↑', sortRating:'평점',
+    upto5:'$5 이하', upto10:'$10 이하', upto20:'$20 이하',
+    loadMore:'더 보기', loading:'로딩 중...',
+    openSteam:'Steam', reviews:'리뷰',
+    getSteam:'Steam에서 받기',
+    noRating:'평점 없음',
+    pppNote:'🟢 = 미국보다 저렴 · ⚪ = 미국과 동일 · 🔴 = 미국보다 비쌈',
+    totalGames:'전체 게임', freeGames:'무료', maxDisc:'최대 할인', avgDisc:'평균 할인',
+    noResults:'결과 없음',
+    cheaper:'미국보다 저렴', than:'', same:'USD와 동일', pricier:'USD보다 비쌈',
+  },
+};
+
+// ════════════════════════════════════════════════════
+// CURRENCIES
+// ════════════════════════════════════════════════════
+const CURRENCIES={
+  USD:{flag:'🇺🇸',name:'Доллар США',sym:'$',rate:1,ppp:1.00,group:'am'},
+  CAD:{flag:'🇨🇦',name:'Канадский доллар',sym:'C$',rate:1.37,ppp:0.88,group:'am'},
+  MXN:{flag:'🇲🇽',name:'Мексиканское песо',sym:'MX$',rate:17.3,ppp:0.62,group:'am'},
+  BRL:{flag:'🇧🇷',name:'Бразильский реал',sym:'R$',rate:5.10,ppp:0.52,group:'am'},
+  ARS:{flag:'🇦🇷',name:'Аргентинское песо',sym:'$',rate:920,ppp:0.16,group:'am'},
+  CLP:{flag:'🇨🇱',name:'Чилийское песо',sym:'$',rate:950,ppp:0.53,group:'am'},
+  COP:{flag:'🇨🇴',name:'Колумбийское песо',sym:'$',rate:3950,ppp:0.43,group:'am'},
+  PEN:{flag:'🇵🇪',name:'Перуанский соль',sym:'S/',rate:3.75,ppp:0.48,group:'am'},
+  EUR:{flag:'🇪🇺',name:'Евро',sym:'€',rate:0.92,ppp:0.93,group:'eu'},
+  GBP:{flag:'🇬🇧',name:'Фунт стерлингов',sym:'£',rate:0.79,ppp:0.91,group:'eu'},
+  CHF:{flag:'🇨🇭',name:'Швейцарский франк',sym:'CHF',rate:0.89,ppp:1.05,group:'eu'},
+  PLN:{flag:'🇵🇱',name:'Польский злотый',sym:'zł',rate:4.05,ppp:0.78,group:'eu'},
+  CZK:{flag:'🇨🇿',name:'Чешская крона',sym:'Kč',rate:23.2,ppp:0.73,group:'eu'},
+  HUF:{flag:'🇭🇺',name:'Венгерский форинт',sym:'Ft',rate:363,ppp:0.72,group:'eu'},
+  RON:{flag:'🇷🇴',name:'Румынский лей',sym:'lei',rate:4.72,ppp:0.68,group:'eu'},
+  NOK:{flag:'🇳🇴',name:'Норвежская крона',sym:'kr',rate:10.6,ppp:0.93,group:'eu'},
+  SEK:{flag:'🇸🇪',name:'Шведская крона',sym:'kr',rate:10.5,ppp:0.88,group:'eu'},
+  DKK:{flag:'🇩🇰',name:'Датская крона',sym:'kr',rate:6.91,ppp:0.91,group:'eu'},
+  UAH:{flag:'🇺🇦',name:'Украинская гривна',sym:'₴',rate:41.5,ppp:0.38,group:'eu'},
+  RUB:{flag:'🇷🇺',name:'Российский рубль',sym:'₽',rate:91,ppp:0.32,group:'cis'},
+  KZT:{flag:'🇰🇿',name:'Казахстанский тенге',sym:'₸',rate:463,ppp:0.43,group:'cis'},
+  UZS:{flag:'🇺🇿',name:'Узбекский сум',sym:'сум',rate:12700,ppp:0.28,group:'cis'},
+  GEL:{flag:'🇬🇪',name:'Грузинский лари',sym:'₾',rate:2.68,ppp:0.44,group:'cis'},
+  AMD:{flag:'🇦🇲',name:'Армянский драм',sym:'֏',rate:397,ppp:0.38,group:'cis'},
+  AZN:{flag:'🇦🇿',name:'Азербайджанский манат',sym:'₼',rate:1.70,ppp:0.42,group:'cis'},
+  BYN:{flag:'🇧🇾',name:'Белорусский рубль',sym:'Br',rate:3.27,ppp:0.37,group:'cis'},
+  MDL:{flag:'🇲🇩',name:'Молдавский лей',sym:'L',rate:17.8,ppp:0.42,group:'cis'},
+  KGS:{flag:'🇰🇬',name:'Кыргызский сом',sym:'с',rate:89.5,ppp:0.28,group:'cis'},
+  JPY:{flag:'🇯🇵',name:'Японская иена',sym:'¥',rate:149,ppp:0.72,group:'asia'},
+  CNY:{flag:'🇨🇳',name:'Китайский юань',sym:'¥',rate:7.24,ppp:0.52,group:'asia'},
+  KRW:{flag:'🇰🇷',name:'Корейская вона',sym:'₩',rate:1328,ppp:0.72,group:'asia'},
+  TWD:{flag:'🇹🇼',name:'Тайваньский доллар',sym:'NT$',rate:31.7,ppp:0.67,group:'asia'},
+  HKD:{flag:'🇭🇰',name:'Гонконгский доллар',sym:'HK$',rate:7.82,ppp:0.88,group:'asia'},
+  SGD:{flag:'🇸🇬',name:'Сингапурский доллар',sym:'S$',rate:1.35,ppp:0.93,group:'asia'},
+  INR:{flag:'🇮🇳',name:'Индийская рупия',sym:'₹',rate:83.5,ppp:0.42,group:'asia'},
+  MYR:{flag:'🇲🇾',name:'Малайзийский ринггит',sym:'RM',rate:4.72,ppp:0.52,group:'asia'},
+  THB:{flag:'🇹🇭',name:'Тайский бат',sym:'฿',rate:35.3,ppp:0.48,group:'asia'},
+  IDR:{flag:'🇮🇩',name:'Индонезийская рупия',sym:'Rp',rate:15800,ppp:0.38,group:'asia'},
+  PHP:{flag:'🇵🇭',name:'Филиппинское песо',sym:'₱',rate:56.5,ppp:0.42,group:'asia'},
+  VND:{flag:'🇻🇳',name:'Вьетнамский донг',sym:'₫',rate:24600,ppp:0.33,group:'asia'},
+  PKR:{flag:'🇵🇰',name:'Пакистанская рупия',sym:'Rs',rate:280,ppp:0.23,group:'asia'},
+  TRY:{flag:'🇹🇷',name:'Турецкая лира',sym:'₺',rate:34.2,ppp:0.25,group:'me'},
+  SAR:{flag:'🇸🇦',name:'Саудовский риял',sym:'SR',rate:3.75,ppp:0.73,group:'me'},
+  AED:{flag:'🇦🇪',name:'Дирхам ОАЭ',sym:'AED',rate:3.67,ppp:0.78,group:'me'},
+  ILS:{flag:'🇮🇱',name:'Израильский шекель',sym:'₪',rate:3.62,ppp:0.82,group:'me'},
+  EGP:{flag:'🇪🇬',name:'Египетский фунт',sym:'E£',rate:48.5,ppp:0.28,group:'me'},
+  QAR:{flag:'🇶🇦',name:'Катарский риял',sym:'QR',rate:3.64,ppp:0.78,group:'me'},
+  KWD:{flag:'🇰🇼',name:'Кувейтский динар',sym:'KD',rate:0.307,ppp:0.82,group:'me'},
+  AUD:{flag:'🇦🇺',name:'Австралийский доллар',sym:'A$',rate:1.54,ppp:0.85,group:'oth'},
+  NZD:{flag:'🇳🇿',name:'Новозеландский доллар',sym:'NZ$',rate:1.64,ppp:0.83,group:'oth'},
+  ZAR:{flag:'🇿🇦',name:'Южноафр. рэнд',sym:'R',rate:18.8,ppp:0.43,group:'oth'},
+  NGN:{flag:'🇳🇬',name:'Нигерийская найра',sym:'₦',rate:1520,ppp:0.28,group:'oth'},
+  MAD:{flag:'🇲🇦',name:'Марокканский дирхам',sym:'MAD',rate:9.95,ppp:0.38,group:'oth'},
+};
+
+// ════════════════════════════════════════════════════
+// STATE & SETTINGS
+// ════════════════════════════════════════════════════
+let activeCur='USD', activeLang='ru', activeTheme='lime';
+let curGroup='all', curSearch='';
+let allDeals=[], filteredDeals=[], freeDeals=[];
+let filters={disc:0,price:9999,sort:'savings'};
+let renderOffset=0;
+const BATCH=24, PAGES=17;
+let cdInterval=null, cdSec=300;
+let heroGame=null;
+
+// ── LOAD / SAVE SETTINGS ─────────────────────────────
+function loadSettings(){
+  try {
+    const s=JSON.parse(localStorage.getItem('steamdeals_settings')||'{}');
+    if(s.cur && CURRENCIES[s.cur]) activeCur=s.cur;
+    if(s.lang && LANGS[s.lang]) activeLang=s.lang;
+    if(s.theme && THEMES[s.theme]) activeTheme=s.theme;
+  } catch(e){}
+}
+function saveSettings(){
+  try { localStorage.setItem('steamdeals_settings',JSON.stringify({cur:activeCur,lang:activeLang,theme:activeTheme})); } catch(e){}
+}
+
+// ── APPLY THEME ───────────────────────────────────────
+function applyTheme(id){
+  const t=THEMES[id]; if(!t) return;
+  activeTheme=id;
+  const r=document.documentElement;
+  r.style.setProperty('--acc', t.acc);
+  r.style.setProperty('--acc2', t.acc);
+  r.style.setProperty('--accR', t.r);
+  r.style.setProperty('--accG', t.g);
+  r.style.setProperty('--accB', t.b);
+  // Update logo pulse keyframe via style tag
+  let st=document.getElementById('theme-kf');
+  if(!st){st=document.createElement('style');st.id='theme-kf';document.head.appendChild(st);}
+  st.textContent=`@keyframes lpulse{0%,100%{box-shadow:0 0 0 0 rgba(${t.r},${t.g},${t.b},.4)}50%{box-shadow:0 0 0 8px rgba(${t.r},${t.g},${t.b},0)}}`;
+  saveSettings();
+  // Re-render grid to update price colors if needed
+  if(allDeals.length){ renderOffset=0; document.getElementById('grid-wrap').innerHTML=''; renderNextBatch(); }
+  buildThemeGrid();
+}
+
+// ── APPLY LANGUAGE ────────────────────────────────────
+function applyLang(id){
+  const L=LANGS[id]; if(!L) return;
+  activeLang=id;
+  document.documentElement.lang=id;
+  document.title='STEAM DEALS — '+L.allDeals;
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n;
+    if(L[k]!==undefined) el.textContent=L[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.dataset.i18nPh;
+    if(L[k]!==undefined) el.placeholder=L[k];
+  });
+  // Update countdown label
+  updateCountdownLabel();
+  // Re-render hero & cards to update text
+  if(heroGame) renderHero();
+  if(allDeals.length){ renderOffset=0; document.getElementById('grid-wrap').innerHTML=''; renderNextBatch(); }
+  renderFreeGames();
+  saveSettings();
+  buildLangGrid();
+}
+
+function t(key){ return (LANGS[activeLang]||LANGS.ru)[key]||key; }
+
+// ════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ════════════════════════════════════════════════════
+function toggleSettings(){
+  const m=document.getElementById('set-modal'),o=document.getElementById('set-overlay'),b=document.getElementById('set-btn');
+  const open=m.classList.contains('open');
+  if(open){closeSettings();return;}
+  closeCur();
+  m.classList.add('open');o.classList.add('open');b.classList.add('open');
+  buildLangGrid(); buildThemeGrid();
+}
+function closeSettings(){
+  document.getElementById('set-modal').classList.remove('open');
+  document.getElementById('set-overlay').classList.remove('open');
+  document.getElementById('set-btn').classList.remove('open');
+}
+
+function buildLangGrid(){
+  document.getElementById('lang-grid').innerHTML=Object.entries(LANGS).map(([id,L])=>`
+    <div class="lang-item${id===activeLang?' active':''}" onclick="applyLang('${id}')">
+      <span class="lang-flag">${L.flag}</span>
+      <div class="lang-info">
+        <div class="lang-code">${L.code}</div>
+        <div class="lang-name">${L.name}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildThemeGrid(){
+  document.getElementById('theme-grid').innerHTML=Object.entries(THEMES).map(([id,th])=>`
+    <div class="theme-item${id===activeTheme?' active':''}" onclick="applyTheme('${id}')"
+         style="${id===activeTheme?`border-color:${th.acc};box-shadow:0 0 20px rgba(${th.r},${th.g},${th.b},.25)`:''}">
+      <div class="theme-swatch" style="background:linear-gradient(135deg,${th.acc},rgba(${th.r},${th.g},${th.b},.4));${id===activeTheme?`box-shadow:0 0 20px rgba(${th.r},${th.g},${th.b},.5)`:''}"></div>
+      <div class="theme-label">${th.emoji} ${th.name}</div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════
+// CURRENCY MODAL
+// ════════════════════════════════════════════════════
+function toggleCur(){
+  const m=document.getElementById('cur-modal'),o=document.getElementById('cur-overlay'),b=document.getElementById('cur-btn');
+  if(m.classList.contains('open')){closeCur();return;}
+  closeSettings();
+  m.classList.add('open');o.classList.add('open');b.classList.add('open');
+  buildCurList();
+}
+function closeCur(){
+  document.getElementById('cur-modal').classList.remove('open');
+  document.getElementById('cur-overlay').classList.remove('open');
+  document.getElementById('cur-btn').classList.remove('open');
+}
+function setGroup(btn,g){
+  curGroup=g;
+  document.querySelectorAll('.cm-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); buildCurList();
+}
+function filterCurList(){ curSearch=document.getElementById('cur-search').value.toLowerCase(); buildCurList(); }
+function buildCurList(){
+  const list=document.getElementById('cm-list');
+  const entries=Object.entries(CURRENCIES).filter(([code,c])=>{
+    if(curGroup!=='all'&&c.group!==curGroup) return false;
+    if(curSearch&&!code.toLowerCase().includes(curSearch)&&!c.name.toLowerCase().includes(curSearch)) return false;
+    return true;
+  });
+  list.innerHTML=entries.map(([code,c])=>{
+    const f=c.ppp;
+    let fl,fc;
+    if(f<0.5){fl=`${(1/f).toFixed(1)}x дешевле`;fc='cf-cheap';}
+    else if(f<0.8){fl=`-${Math.round((1-f)*100)}%`;fc='cf-cheap';}
+    else if(f<=0.99){fl=`-${Math.round((1-f)*100)}%`;fc='cf-mid';}
+    else if(f<=1.02){fl='= USD';fc='cf-norm';}
+    else{fl=`+${Math.round((f-1)*100)}%`;fc='cf-exp';}
+    return `<div class="cm-item${code===activeCur?' selected':''}" onclick="selectCur('${code}')">
+      <div class="ci-flag">${c.flag}</div>
+      <div class="ci-info"><div class="ci-code">${code}</div><div class="ci-name">${c.name}</div></div>
+      <div class="ci-factor ${fc}">${fl}</div>
+    </div>`;
+  }).join('');
+}
+function selectCur(code){
+  activeCur=code;
+  const c=CURRENCIES[code];
+  document.getElementById('cur-flag').textContent=c.flag;
+  document.getElementById('cur-code').textContent=code;
+  closeCur(); buildCurList(); saveSettings();
+  renderOffset=0; document.getElementById('grid-wrap').innerHTML='';
+  applyFilters(true); if(heroGame) renderHero(); updateStats(); renderFreeTeaser();
+  showNotif(`${c.flag} ${code} · ${pppLabel()}`);
+}
+
+// ── PRICE HELPERS ─────────────────────────────────────
+function convertPrice(usd){ const c=CURRENCIES[activeCur]; return usd*c.ppp*c.rate; }
+function fmtPrice(val){
+  const c=CURRENCIES[activeCur],a=Math.abs(val);
+  let s;
+  if(a>=100000) s=Math.round(val).toLocaleString('ru-RU');
+  else if(a>=1000) s=Math.round(val).toLocaleString('ru-RU');
+  else if(a<10) s=val.toFixed(2);
+  else s=val.toFixed(0);
+  return c.sym+s;
+}
+function pppLabel(){
+  const f=CURRENCIES[activeCur].ppp;
+  if(f<0.5) return `💚 В ${(1/f).toFixed(1)}x ${t('cheaper')}`;
+  if(f<0.85) return `💚 На ${Math.round((1-f)*100)}% ${t('cheaper')}`;
+  if(f<=1.02) return `⚪ ${t('same')}`;
+  return `🔴 ${t('pricier')}`;
+}
+
+// ── CURSOR ────────────────────────────────────────────
+(function(){
+  const dot=document.getElementById('cdot'),ring=document.getElementById('cring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+  function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);}
+  loop();
+})();
+
+// ── STARS ─────────────────────────────────────────────
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  for(let i=0;i<200;i++) pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.2,a:Math.random()*.5+.1,va:(Math.random()-.5)*.006});
+  function loop(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.a+=p.va;if(p.a<.05||p.a>.6)p.va*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,255,200,${p.a})`;ctx.fill();});requestAnimationFrame(loop);}
+  loop();
+})();
+
+// ── PROGRESS ─────────────────────────────────────────
+function setProgress(v){ const b=document.getElementById('pbar'); b.style.width=v+'%'; b.style.opacity=v>=100?0:1; }
+
+// ── FETCH ─────────────────────────────────────────────
+async function startFetch(manual=false){
+  const btn=document.getElementById('refreshBtn'),ico=document.getElementById('rIcon');
+  ico.classList.add('spinning'); btn.disabled=true;
+  allDeals=[];freeDeals=[];filteredDeals=[];heroGame=null;renderOffset=0;
+  document.getElementById('grid-wrap').innerHTML='';
+  document.getElementById('free-row').innerHTML='';
+  document.getElementById('load-more-wrap').style.display='none';
+  document.getElementById('fetch-status').style.display='flex';
+  setProgress(2);
+  let sk=''; for(let i=0;i<24;i++) sk+=`<div class="gcard-sk"><div class="sk sk-img"></div><div class="sk-bd"><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-p"></div></div></div>`;
+  document.getElementById('grid-wrap').innerHTML=sk;
+
+  // ── Fetch free games separately (no metacritic filter, upperPrice=0)
+  fetchFreeGames();
+
+  // ── Fetch paid deals with metacritic filter
+  const base='https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=60&sortBy=Savings&metacritic=60';
+  try {
+    for(let page=0;page<PAGES;page++){
+      try{
+        const res=await fetch(`${base}&pageNumber=${page}`);
+        if(!res.ok) break;
+        const raw=await res.json();
+        if(!raw||!raw.length) break;
+        const batch=raw.filter(d=>parseFloat(d.savings)>=20&&parseFloat(d.salePrice)>0).map(d=>({
+          id:d.gameID,appId:d.steamAppID,title:d.title,thumb:d.thumb,
+          sale:parseFloat(d.salePrice),normal:parseFloat(d.normalPrice),
+          savings:Math.round(parseFloat(d.savings)),
+          meta:parseInt(d.metacriticScore)||0,rPct:parseInt(d.steamRatingPercent)||0,
+          rTxt:d.steamRatingText||'',dealID:d.dealID,
+        }));
+        allDeals.push(...batch);
+        setProgress(Math.round(((page+1)/PAGES)*90)+2);
+        if(page===0){
+          document.getElementById('grid-wrap').innerHTML='';
+          updateHero(); updateStats(); applyFilters(true);
+        } else { updateStats(); applyFilters(false); }
+      }catch(e){break;}
+    }
+  } finally {
+    document.getElementById('fetch-status').style.display='none';
+    setProgress(100); ico.classList.remove('spinning'); btn.disabled=false;
+    updateStats(); applyFilters(false);
+  }
+  document.getElementById('upd-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if(manual) showNotif('✓ '+t('updated')+': '+allDeals.length+' '+t('games'));
+  startCountdown();
+}
+
+// ── FREE GAMES — dedicated fetch ──────────────────────
+async function fetchFreeGames(){
+  freeDeals=[];
+  updateFreeUI();
+  try {
+    // Multiple pages of free deals, no metacritic requirement
+    const pages = await Promise.all([0,1,2,3].map(p=>
+      fetch(`https://www.cheapshark.com/api/1.0/deals?storeID=1&upperPrice=0&pageSize=60&pageNumber=${p}`)
+        .then(r=>r.ok?r.json():[]).catch(()=>[])
+    ));
+    const raw = pages.flat();
+    const seen = new Set();
+    freeDeals = raw
+      .filter(d=>{
+        if(seen.has(d.gameID)) return false;
+        seen.add(d.gameID);
+        return parseFloat(d.salePrice)===0 && parseFloat(d.normalPrice)>0;
+      })
+      .map(d=>({
+        id:d.gameID,appId:d.steamAppID,title:d.title,thumb:d.thumb,
+        sale:0, normal:parseFloat(d.normalPrice),
+        savings:100,
+        meta:parseInt(d.metacriticScore)||0,
+        rPct:parseInt(d.steamRatingPercent)||0,
+        rTxt:d.steamRatingText||'',dealID:d.dealID,
+      }))
+      .sort((a,b)=>(b.meta||0)-(a.meta||0)||(b.rPct||0)-(a.rPct||0));
+  } catch(e){}
+  updateFreeUI();
+}
+
+function updateFreeUI(){
+  const n=freeDeals.length;
+  const fc=document.getElementById('free-count');
+  if(fc) fc.textContent=n;
+  updateStats();
+  renderFreeTeaser();
+}
+
+// ── HERO ──────────────────────────────────────────────
+function updateHero(){
+  if(!allDeals.length) return;
+  const cands=allDeals.filter(d=>d.savings>=40&&(d.meta>=75||d.rPct>=85));
+  if(!cands.length) return;
+  heroGame=cands.reduce((b,d)=>{ const s=d.meta*2+d.savings+(d.rPct||0)*.5,bs=b.meta*2+b.savings+(b.rPct||0)*.5; return s>bs?d:b; },cands[0]);
+  renderHero();
+}
+function renderHero(){
+  const d=heroGame; if(!d) return;
+  const hero=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/library_hero.jpg`:'';
+  const fallback=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:'';
+  const bg=document.getElementById('hero-bg');
+  if(hero){const img=new Image();img.onload=()=>bg.style.backgroundImage=`url('${hero}')`;img.onerror=()=>bg.style.backgroundImage=`url('${fallback}')`;img.src=hero;}
+  document.getElementById('hero-title').textContent=d.title;
+  document.getElementById('hero-tags').innerHTML=t('heroTags').map(tag=>`<span class="hero-tag">${tag}</span>`).join('');
+  let m='';
+  if(d.meta>0) m+=`<div class="score-box ${d.meta>=75?'score-g':'score-y'}">${d.meta}</div><span style="font-size:13px;color:#aaa">Metacritic</span>`;
+  if(d.rPct>0) m+=`<div style="font-size:14px;color:#aaa">${d.rTxt||d.rPct+'%'}</div>`;
+  document.getElementById('hero-meta').innerHTML=m;
+  const cs=convertPrice(d.sale),cn=convertPrice(d.normal);
+  const pppNote=CURRENCIES[activeCur].ppp<0.95?`<span class="hero-ppp-note">${pppLabel()}</span>`:'';
+  document.getElementById('hero-price').innerHTML=d.sale===0
+    ?`<span class="hero-badge">FREE</span>`
+    :`<span class="hero-badge">-${d.savings}%</span><span class="hero-sale">${fmtPrice(cs)}</span><span class="hero-orig">${fmtPrice(cn)}</span>${pppNote}`;
+  const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+  document.getElementById('hero-actions').innerHTML=`
+    <a class="btn-hp" href="${link}" target="_blank">⚡ ${t('getSteam')}</a>
+    <a class="btn-hs" href="https://www.metacritic.com/search/${encodeURIComponent(d.title)}" target="_blank">📊 ${t('reviews')}</a>`;
+}
+
+// ── FREE GAMES TEASER (strip) ─────────────────────────
+function renderFreeTeaser(){
+  const row=document.getElementById('free-row');
+  if(!freeDeals.length){row.innerHTML='';return;}
+  row.innerHTML=freeDeals.slice(0,12).map((d,i)=>{
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    return `<div class="free-card" style="animation-delay:${i*50}ms" onclick="window.open('${link}','_blank')">
+      <div class="fc-img-wrap"><img class="fc-img" src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none'"><div class="fc-img-overlay"></div><span class="fc-free-badge">FREE</span></div>
+      <div class="fc-body">
+        <div class="fc-title" title="${d.title}">${d.title}</div>
+        <div class="fc-meta">${d.meta>0?'MC: '+d.meta:d.rPct>0?d.rPct+'%':'100% off'} · было $${d.normal.toFixed(2)}</div>
+        <a class="fc-cta" href="${link}" target="_blank" onclick="event.stopPropagation()">⚡ ${t('getFree')}</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderFreeGames(){ renderFreeTeaser(); } // legacy compat
+function scrollFree(d){document.getElementById('free-row-wrap').scrollBy({left:d*640,behavior:'smooth'});}
+
+// ── FREE MODAL ────────────────────────────────────────
+let freeSortMode='default', freeSearchQuery='';
+
+function openFreeModal(){
+  const m=document.getElementById('free-modal'),o=document.getElementById('free-overlay');
+  if(!m||!o) return;
+  m.classList.add('open'); o.classList.add('open');
+  document.body.style.overflow='hidden';
+  renderFreeModal();
+}
+function closeFreeModal(){
+  const m=document.getElementById('free-modal'),o=document.getElementById('free-overlay');
+  if(!m||!o) return;
+  m.classList.remove('open'); o.classList.remove('open');
+  document.body.style.overflow='';
+}
+function setFreeSort(btn,mode){
+  freeSortMode=mode;
+  document.querySelectorAll('[data-fs]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderFreeModal();
+}
+function filterFreeGames(){
+  freeSearchQuery=document.getElementById('free-search').value.toLowerCase().trim();
+  renderFreeModal();
+}
+function renderFreeModal(){
+  const body=document.getElementById('fm-body');
+  if(!body) return;
+  if(!freeDeals.length){
+    body.innerHTML=`<div class="fm-loading"><div class="fm-spinner"></div><span>${t('loading')}</span></div>`;
+    return;
+  }
+  let list=[...freeDeals];
+  if(freeSearchQuery) list=list.filter(d=>d.title.toLowerCase().includes(freeSearchQuery));
+  if(freeSortMode==='meta') list.sort((a,b)=>b.meta-a.meta);
+  else if(freeSortMode==='rating') list.sort((a,b)=>b.rPct-a.rPct);
+  else if(freeSortMode==='name') list.sort((a,b)=>a.title.localeCompare(b.title));
+
+  if(!list.length){
+    body.innerHTML=`<div class="fm-empty"><span class="em-icon">🔍</span><strong>${t('noResults')}</strong></div>`;
+    return;
+  }
+  body.innerHTML='';
+  list.forEach((d,i)=>{
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    const mcls=d.meta>=75?'mb-g':d.meta>=60?'mb-y':d.meta>0?'mb-r':'mb-n';
+    const rcls=d.rPct>=80?'gr-h':d.rPct>=60?'gr-m':d.rPct>0?'gr-l':'gr-n';
+    const stars='★'.repeat(Math.round(d.rPct/20))+'☆'.repeat(5-Math.round(d.rPct/20));
+    const rHtml=d.rPct>0
+      ?`<span class="fgcard-rating ${rcls}"><span style="letter-spacing:1px;font-size:9px">${stars}</span> ${d.rPct}%</span>`
+      :`<span class="fgcard-rating gr-n">${t('noRating')}</span>`;
+    const card=document.createElement('div');
+    card.className='fgcard'; card.style.animationDelay=(i*22)+'ms';
+    card.innerHTML=`
+      <div class="fgcard-img-wrap">
+        <img class="fgcard-img" src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="fgcard-img-fb">🎮</div>
+        <div class="fgcard-ov"></div>
+        <span class="fgcard-free-tag">FREE</span>
+        <span class="fgcard-meta-badge ${mcls}">${d.meta>0?d.meta:'?'}</span>
+        <span class="fgcard-orig">$${d.normal.toFixed(2)}</span>
+      </div>
+      <div class="fgcard-body">
+        <div class="fgcard-title" title="${d.title}">${d.title}</div>
+        ${rHtml}
+        <a class="fgcard-cta" href="${link}" target="_blank" onclick="event.stopPropagation()">⚡ ${t('getFree')}</a>
+      </div>`;
+    card.onclick=()=>window.open(link,'_blank');
+    body.appendChild(card);
+  });
+  const note=document.getElementById('fm-footer-note');
+  if(note) note.innerHTML=`<strong>${list.length}</strong> игр с ценой $0.00`;
+}
+
+// ── STATS ─────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('s-total').textContent=[...allDeals,...freeDeals].length;
+  document.getElementById('s-free').textContent=freeDeals.length;
+  document.getElementById('s-maxd').textContent=allDeals.length?Math.max(...allDeals.map(d=>d.savings))+'%':'—';
+  const avg=allDeals.length?Math.round(allDeals.reduce((s,d)=>s+d.savings,0)/allDeals.length):0;
+  document.getElementById('s-avgd').textContent=avg?avg+'%':'—';
+}
+
+// ── FILTERS ───────────────────────────────────────────
+function setF(type,btn){
+  filters[type]=isNaN(+btn.dataset.v)?btn.dataset.v:+btn.dataset.v;
+  document.querySelectorAll(`[data-f="${type}"]`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); renderOffset=0; applyFilters(true);
+}
+function applyFilters(doRender=true){
+  const srch=document.getElementById('search').value.toLowerCase().trim();
+  let res=allDeals.filter(d=>{
+    if(d.savings<filters.disc) return false;
+    if(filters.price<9999&&d.sale>filters.price) return false;
+    if(srch&&!d.title.toLowerCase().includes(srch)) return false;
+    return true;
+  });
+  if(filters.sort==='savings') res.sort((a,b)=>b.savings-a.savings);
+  else if(filters.sort==='price') res.sort((a,b)=>a.sale-b.sale);
+  else if(filters.sort==='meta') res.sort((a,b)=>b.meta-a.meta);
+  else if(filters.sort==='rating') res.sort((a,b)=>b.rPct-a.rPct);
+  filteredDeals=res;
+  document.getElementById('shown-count').textContent=res.length;
+  document.getElementById('shown-count2').textContent=res.length;
+  if(doRender){renderOffset=0;document.getElementById('grid-wrap').innerHTML='';renderNextBatch();}
+}
+
+// ── RENDER BATCH ──────────────────────────────────────
+function renderNextBatch(){
+  const grid=document.getElementById('grid-wrap');
+  const slice=filteredDeals.slice(renderOffset,renderOffset+BATCH);
+  renderOffset+=BATCH;
+  const showPPP=CURRENCIES[activeCur].ppp<0.88;
+  slice.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='gcard'; el.style.animationDelay=(i*28)+'ms';
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    const mcls=d.meta>=75?'mb-g':d.meta>=60?'mb-y':d.meta>0?'mb-r':'mb-n';
+    const rcls=d.rPct>=80?'gr-h':d.rPct>=60?'gr-m':d.rPct>0?'gr-l':'gr-n';
+    const stars='★'.repeat(Math.round(d.rPct/20))+'☆'.repeat(5-Math.round(d.rPct/20));
+    const cs=convertPrice(d.sale),cn=convertPrice(d.normal),csave=cn-cs;
+    const rHtml=d.rPct>0?`<span class="gcard-rating ${rcls}"><span class="stars-sm">${stars}</span>${d.rPct}%</span>`:`<span class="gcard-rating gr-n">${t('noRating')}</span>`;
+    const pppHtml=showPPP?`<div class="price-ppp">💚 ${pppLabel()}</div>`:'';
+    el.innerHTML=`
+      <div class="gcard-img-wrap">
+        <img class="gcard-img" src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gcard-img-fb">🎮</div>
+        <div class="gcard-overlay"></div>
+        <span class="disc-badge">-${d.savings}%</span>
+        <span class="meta-badge ${mcls}">${d.meta>0?d.meta:'?'}</span>
+      </div>
+      <div class="gcard-body">
+        <div class="gcard-title" title="${d.title}">${d.title}</div>
+        ${rHtml}
+        <div class="gcard-price">
+          <span class="price-now">${fmtPrice(cs)}</span>
+          <span class="price-was">${fmtPrice(cn)}</span>
+          <span class="price-save">-${fmtPrice(csave)}</span>
+          ${pppHtml}
+        </div>
+        <a class="gcard-cta" href="${link}" target="_blank" onclick="event.stopPropagation()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ${t('openSteam')}
+        </a>
+      </div>`;
+    el.onclick=()=>window.open(link,'_blank');
+    grid.appendChild(el);
+  });
+  document.getElementById('load-more-wrap').style.display=renderOffset<filteredDeals.length?'block':'none';
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────
+function updateCountdownLabel(){
+  const m=Math.floor(cdSec/60),s=cdSec%60;
+  document.getElementById('countdown').textContent=`${t('autoIn')} ${m}:${String(s).padStart(2,'0')}`;
+}
+function startCountdown(){
+  clearInterval(cdInterval); cdSec=300;
+  cdInterval=setInterval(()=>{
+    cdSec--; updateCountdownLabel();
+    if(cdSec<=0){clearInterval(cdInterval);startFetch(false);}
+  },1000);
+}
+
+// ── NOTIF ─────────────────────────────────────────────
+function showNotif(msg){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ── BTT ───────────────────────────────────────────────
+window.addEventListener('scroll',()=>document.getElementById('btt').classList.toggle('v',scrollY>500));
+
+// ── INIT ──────────────────────────────────────────────
+loadSettings();
+applyTheme(activeTheme);   // apply saved theme silently
+applyLang(activeLang);     // apply saved language silently
+// Update currency button
+document.getElementById('cur-flag').textContent=CURRENCIES[activeCur].flag;
+document.getElementById('cur-code').textContent=activeCur;
+startFetch(false);
+</script>
+</body>
+</html>
