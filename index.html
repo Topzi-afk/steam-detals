@@ -1,146 +1,3056 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Steam Deals</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+/* ─── INTRO WRAPPER BASE ─── */
+#topzi-wrap, #kai-wrap {
+  position: fixed; inset: 0; z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.9s ease;
+  transform: translateZ(0); /* contain fixed children */
+  will-change: opacity;
+}
+#kai-wrap { display: none; opacity: 0; }
+#topzi-wrap.fade-out { opacity: 0; pointer-events: none; }
 
-    body {
-      background: #0e0e10;
-      color: #c6d4df;
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+/* skip button */
+#intro-skip {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  padding: 7px 18px; border-radius: 8px;
+  background: rgba(0,229,255,.08); border: 1px solid rgba(0,229,255,.25);
+  color: #00e5ff; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+  cursor: pointer; letter-spacing: .08em; transition: all .2s;
+  opacity: 0; animation: skip-appear .4s ease 1.5s forwards;
+}
+#intro-skip:hover { background: rgba(0,229,255,.2); }
+@keyframes skip-appear { to { opacity: 1; } }
 
-    .wrap {
-      text-align: center;
-      padding: 40px 24px;
-    }
+/* scoped Topzi styles */
 
-    .logo {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: #66c0f4;
-      margin-bottom: 64px;
-    }
+  
 
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #556772;
-      margin-bottom: 28px;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #f8a53d;
-      animation: blink 2s ease-in-out infinite;
-    }
+  #topzi-wrap {
+    background: #03030d;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+  }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
+  /* ── BG CANVAS (matrix rain) ── */
+  #topzi-bg { position: fixed; inset: 0; z-index: 0; }
 
-    h1 {
-      font-size: 32px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.3;
-      margin-bottom: 16px;
-    }
+  /* ── VIGNETTE ── */
+#topzi-wrap .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 40%, #03030d 100%);
+  }
 
-    h1 span { color: #66c0f4; }
+  /* ── SCANLINE ── */
+#topzi-wrap .scan {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,.018) 2px, rgba(0,229,255,.018) 4px);
+  }
 
-    .sub {
-      font-size: 14px;
-      color: #556772;
-      line-height: 1.8;
-      margin-bottom: 56px;
-    }
+  /* ── MAIN STAGE ── */
+#topzi-wrap .stage {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0;
+  }
 
-    .line {
-      width: 32px;
-      height: 1px;
-      background: rgba(255,255,255,0.08);
-      margin: 0 auto 56px;
-    }
+  /* ── LETTER T ── */
+  .letter-T {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(120px, 20vw, 200px);
+    line-height: 1;
+    color: transparent;
+    position: relative;
+    opacity: 0;
+    animation: T-appear 0.6s cubic-bezier(.2,1,.4,1) 2.6s forwards;
+    letter-spacing: -0.02em;
+    /* clip to reveal bottom-up */
+    clip-path: inset(100% 0 0 0);
+  }
+  @keyframes T-appear {
+    0%   { opacity: 1; clip-path: inset(100% 0 0 0); color: transparent; text-shadow: none; }
+    40%  { clip-path: inset(0% 0 0 0); color: #00e5ff; text-shadow: 0 0 40px #00e5ff, 0 0 80px rgba(0,229,255,.6); }
+    70%  { color: #e0f8ff; text-shadow: 0 0 60px #00e5ff, 0 0 120px rgba(0,229,255,.5), 0 0 200px rgba(0,229,255,.2); }
+    100% { opacity: 1; clip-path: inset(0% 0 0 0); color: #e0f8ff; text-shadow: 0 0 30px #00e5ff, 0 0 60px rgba(0,229,255,.4); }
+  }
 
-    .tg {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: #66c0f4;
-      font-size: 14px;
-      border: 1px solid rgba(102,192,244,0.2);
-      border-radius: 4px;
-      padding: 12px 22px;
-      transition: border-color .2s, background .2s;
-    }
+  /* subtle glitch on T after appear */
+  .letter-T.glitch {
+    animation: T-appear 0.6s cubic-bezier(.2,1,.4,1) 2.6s forwards, T-glitch 0.15s steps(2) 3.4s 3;
+  }
+  @keyframes T-glitch {
+    0%   { transform: translate(0,0) skewX(0deg); }
+    25%  { transform: translate(-3px,1px) skewX(-2deg); color: #ff0055; }
+    50%  { transform: translate(3px,-1px) skewX(1deg); }
+    75%  { transform: translate(-2px,0) skewX(2deg); }
+    100% { transform: translate(0,0) skewX(0deg); color: #e0f8ff; }
+  }
 
-    .tg:hover {
-      border-color: rgba(102,192,244,0.5);
-      background: rgba(102,192,244,0.05);
-    }
+  /* ── OPZI TEXT ── */
+  .opzi-wrap {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: clamp(120px, 20vw, 200px);
+    line-height: 1;
+    display: flex;
+    overflow: hidden;
+    /* aligned to baseline of T */
+  }
+  .opzi-wrap span {
+    display: inline-block;
+    color: #e0f8ff;
+    opacity: 0;
+    transform: translateY(40px) translateX(-10px);
+    text-shadow: 0 0 30px #00e5ff, 0 0 60px rgba(0,229,255,.4);
+  }
+  .opzi-wrap span:nth-child(1) { animation: char-in .35s cubic-bezier(.2,1,.4,1) 3.25s forwards; }
+  .opzi-wrap span:nth-child(2) { animation: char-in .35s cubic-bezier(.2,1,.4,1) 3.38s forwards; }
+  .opzi-wrap span:nth-child(3) { animation: char-in .35s cubic-bezier(.2,1,.4,1) 3.51s forwards; }
+  .opzi-wrap span:nth-child(4) { animation: char-in .35s cubic-bezier(.2,1,.4,1) 3.64s forwards; }
+  @keyframes char-in {
+    0%   { opacity: 0; transform: translateY(40px) translateX(-6px); filter: blur(6px); }
+    60%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) translateX(0); filter: blur(0); }
+  }
 
-    .tg svg {
-      width: 16px;
-      height: 16px;
-      fill: #2aabee;
-      flex-shrink: 0;
-    }
+  /* ── DECORATIONS ── */
+  .deco {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    animation: deco-fade 1s ease 4.1s forwards;
+  }
+  @keyframes deco-fade { to { opacity: 1; } }
 
-    footer {
-      position: fixed;
-      bottom: 24px;
-      font-size: 11px;
-      color: #2a3540;
-      letter-spacing: 1px;
-    }
-  </style>
+  /* corner brackets */
+  .bracket-tl, .bracket-tr, .bracket-bl, .bracket-br {
+    position: absolute;
+    width: 28px; height: 28px;
+    opacity: 0;
+    animation: deco-fade .6s ease 4.0s forwards;
+  }
+  .bracket-tl { top: -16px; left: -16px; border-top: 2px solid #00e5ff; border-left: 2px solid #00e5ff; }
+  .bracket-tr { top: -16px; right: -16px; border-top: 2px solid #00e5ff; border-right: 2px solid #00e5ff; }
+  .bracket-bl { bottom: -16px; left: -16px; border-bottom: 2px solid #00e5ff; border-left: 2px solid #00e5ff; }
+  .bracket-br { bottom: -16px; right: -16px; border-bottom: 2px solid #00e5ff; border-right: 2px solid #00e5ff; }
+
+  /* scan line that sweeps across T on appear */
+  .sweep {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00e5ff, #fff, #00e5ff, transparent);
+    opacity: 0;
+    animation: sweep-down .5s ease 2.55s;
+    box-shadow: 0 0 12px #00e5ff;
+    pointer-events: none;
+    z-index: 20;
+  }
+  @keyframes sweep-down {
+    0%   { top: 0%; opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* ── TAGLINE ── */
+  .tagline {
+    position: absolute;
+    bottom: -36px;
+    left: 50%; transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.35em;
+    color: #006680;
+    white-space: nowrap;
+    opacity: 0;
+    animation: deco-fade 1s ease 4.5s forwards;
+  }
+  .tagline .cursor-blink {
+    display: inline-block;
+    animation: cur-blink .7s step-end infinite;
+    color: #00e5ff;
+  }
+  @keyframes cur-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── HEX CODE FLOATERS ── */
+  .hex-floats {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .hex-floats span {
+    position: absolute;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: rgba(0,229,255,.25);
+    opacity: 0;
+    white-space: nowrap;
+    animation: hex-float var(--dur, 4s) ease var(--del, 0s) infinite;
+  }
+  @keyframes hex-float {
+    0%   { opacity: 0; transform: translate(var(--sx),var(--sy)) scale(.8); }
+    15%  { opacity: 1; }
+    85%  { opacity: .6; }
+    100% { opacity: 0; transform: translate(var(--ex),var(--ey)) scale(1.1); }
+  }
+
+  /* ── INITIAL CURSOR ── */
+  .init-cursor {
+    position: absolute;
+    z-index: 15;
+    font-size: 32px;
+    color: #00e5ff;
+    animation: init-cur 1.2s step-end 4, init-hide .1s ease 1.2s forwards;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  @keyframes init-cur { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes init-hide { to { display: none; opacity: 0; } }
+
+  /* canvas for assembling T particles */
+  #topzi-assemble {
+    position: absolute; z-index: 8; pointer-events: none;
+  }
+
+
+/* scoped KAI styles */
+
+  
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  #kai-wrap {
+    background: #000;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* subtle vignette to add depth to pure black */
+#kai-wrap .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 65% 65% at 50% 50%,
+      transparent 40%, rgba(0,0,0,.75) 100%);
+  }
+#kai-wrap .scan {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(0deg,
+      transparent, transparent 3px,
+      rgba(30,60,180,.01) 3px, rgba(30,60,180,.01) 4px);
+  }
+
+  /* ── STAGE ── */
+#kai-wrap .stage {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ── LOGO WRAP ── */
+#kai-wrap .logo-wrap {
+    position: relative;
+    filter: drop-shadow(0 0 22px rgba(40,100,255,.32))
+            drop-shadow(0 0 55px rgba(20,60,200,.18));
+  }
+
+  /* sweep reveal line */
+  .sweep {
+    position: absolute; left: 0; right: 0; height: 2px; top: 0; z-index: 20;
+    background: linear-gradient(90deg, transparent 0%, #00e5ff 30%, #fff 50%, #00e5ff 70%, transparent 100%);
+    box-shadow: 0 0 14px #00e5ff, 0 0 28px rgba(0,229,255,.4);
+    opacity: 0;
+    animation: sweep-down .55s ease 3.0s;
+    pointer-events: none;
+  }
+  @keyframes sweep-down { 0%{top:0%;opacity:1} 100%{top:100%;opacity:0} }
+
+  /* ── SVG sizing ── */
+  .logo-svg {
+    width: min(680px, 90vw);
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ══ WING ANIMATIONS ══
+     Both wings start folded downward (tips pointing to ground)
+     and sweep UP to the resting horizontal position.
+     Right wing: faster  Left wing: slightly slower — creates natural async flap.
+  */
+  .wing-r {
+    transform-origin: 635px 128px; /* pivot = where wing meets oval, right side */
+    opacity: 0;
+    animation: wR 0.80s cubic-bezier(0.18, 1.6, 0.32, 1) 2.2s forwards;
+  }
+  .wing-l {
+    transform-origin: 265px 128px; /* left side */
+    opacity: 0;
+    animation: wL 0.96s cubic-bezier(0.18, 1.45, 0.32, 1) 2.2s forwards;
+  }
+
+  /* rotate from 56° down → 0° horizontal; spring overshoot */
+  @keyframes wR {
+    0%   { opacity: 1; transform: rotate(56deg); }
+    65%  { transform: rotate(-5deg); }
+    82%  { transform: rotate(2deg); }
+    100% { opacity: 1; transform: rotate(0deg); }
+  }
+  @keyframes wL {
+    0%   { opacity: 1; transform: rotate(-56deg); }
+    67%  { transform: rotate(6deg); }
+    84%  { transform: rotate(-2.5deg); }
+    100% { opacity: 1; transform: rotate(0deg); }
+  }
+
+  /* Breathing glow after wings settle */
+  .wing-r.live {
+    animation:
+      wR .80s cubic-bezier(0.18,1.6,0.32,1) 2.2s forwards,
+      breatheR 3.4s ease-in-out 3.5s infinite;
+  }
+  .wing-l.live {
+    animation:
+      wL .96s cubic-bezier(0.18,1.45,0.32,1) 2.2s forwards,
+      breatheL 3.4s ease-in-out 3.75s infinite;
+  }
+  @keyframes breatheR {
+    0%,100% { transform: rotate(0deg); filter: brightness(1); }
+    50%     { transform: rotate(-1.5deg); filter: brightness(1.12) drop-shadow(0 0 8px rgba(60,120,255,.45)); }
+  }
+  @keyframes breatheL {
+    0%,100% { transform: rotate(0deg); filter: brightness(1); }
+    50%     { transform: rotate(1.5deg);  filter: brightness(1.12) drop-shadow(0 0 8px rgba(60,120,255,.45)); }
+  }
+
+  /* ── CENTER BODY APPEAR ── */
+  .center {
+    opacity: 0;
+    transform-origin: 450px 128px;
+    animation: cAppear .5s cubic-bezier(.2,1,.4,1) 3.05s forwards;
+  }
+  @keyframes cAppear {
+    0%   { opacity: 0; transform: scaleX(0.3); }
+    55%  { opacity: 1; transform: scaleX(1.05); }
+    100% { opacity: 1; transform: scaleX(1); }
+  }
+
+  /* ── ONE-TIME GLITCH on full logo ── */
+  .logo-svg.glitch-once {
+    animation: glitch1 .12s steps(2) 3.75s 3;
+  }
+  @keyframes glitch1 {
+    0%   { transform: translate(0,0) skewX(0deg); filter: none; }
+    20%  { transform: translate(-5px, 1px) skewX(-2.5deg);
+           filter: drop-shadow(4px 0 0 #f00) drop-shadow(-4px 0 0 #0ff); }
+    50%  { transform: translate(4px, -1px) skewX(1.5deg);
+           filter: drop-shadow(-3px 0 0 #f00) drop-shadow(3px 0 0 #0ff); }
+    80%  { transform: translate(-2px, 0) skewX(-1deg);
+           filter: drop-shadow(2px 0 0 rgba(255,0,0,.6)); }
+    100% { transform: translate(0,0) skewX(0deg); filter: none; }
+  }
+
+  /* ── INFO BLOCK ── */
+  .info-block {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    margin-top: 12px;
+  }
+  .separator {
+    display: flex; align-items: center; gap: 12px;
+    width: min(480px, 84vw);
+    opacity: 0;
+    animation: fadeUp .7s ease 3.85s forwards;
+  }
+  .sep-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #1e3a8a 40%, transparent); }
+  .sep-text {
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    font-size: 10px; letter-spacing: .38em;
+    color: rgba(100,150,255,.5); white-space: nowrap; text-transform: uppercase;
+  }
+  .tagline {
+    font-size: 10.5px; letter-spacing: .26em; color: #1e3068;
+    opacity: 0; animation: fadeUp .7s ease 4.05s forwards;
+    width: min(480px, 84vw); text-align: center;
+  }
+  .cur { color: #00e5ff; animation: blink .7s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .powered {
+    margin-top: 8px;
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; animation: fadeUp .8s ease 4.6s forwards;
+    border: 1px solid rgba(30,58,138,.35);
+    border-radius: 3px; padding: 6px 16px;
+    background: rgba(30,58,138,.07);
+  }
+  .pl { font-family:'Rajdhani',sans-serif; font-weight:600; font-size:11px;
+        letter-spacing:.28em; color:rgba(120,160,255,.55); text-transform:uppercase; }
+  .pn { font-family:'Exo 2',sans-serif; font-weight:900; font-size:12.5px;
+        letter-spacing:.12em; color:#00e5ff; text-shadow:0 0 10px rgba(0,229,255,.55); }
+  @keyframes fadeUp { 0%{opacity:0;transform:translateY(6px)} 100%{opacity:1;transform:translateY(0)} }
+
+  /* init cursor */
+  .icur {
+    position:fixed; z-index:20; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:28px; color:#00e5ff;
+    animation: ib 1s step-end 3, ih .05s ease 1.05s forwards;
+  }
+  @keyframes ib { 0%,100%{opacity:1}50%{opacity:0} }
+  @keyframes ih { to{opacity:0} }
+
+  /* hex floaters */
+  .hf { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+        pointer-events:none; z-index:5; }
+  .hf span {
+    position:absolute; font-family:'Share Tech Mono',monospace;
+    font-size:9px; color:rgba(20,60,200,.18); opacity:0; white-space:nowrap;
+    animation: hfa var(--d,4s) ease var(--dl,0s) infinite;
+  }
+  @keyframes hfa {
+    0%  {opacity:0;transform:translate(var(--sx),var(--sy));}
+    15%{opacity:1;} 85%{opacity:.4;}
+    100%{opacity:0;transform:translate(var(--ex),var(--ey));}
+  }
+
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEALSHARK — Горящие скидки Steam</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2306060f'/%3E%3Cpolygon points='16,3 19.5,11.5 29,12.5 22,19 24,28.5 16,24 8,28.5 10,19 3,12.5 12.5,11.5' fill='rgba(200,255,0,.15)' stroke='%23c8ff00' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════ RESET & ROOT ═══════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060f;--bg2:#0a0a18;--bg3:#0f0f22;
+  --acc:#c8ff00;--accR:200;--accG:255;--accB:0;
+  --card:rgba(255,255,255,.032);--cardhv:rgba(255,255,255,.065);
+  --bdr:rgba(255,255,255,.07);--bdr2:rgba(255,255,255,.12);
+  --txt:#e4e8f5;--txt2:#9ba3c0;--muted:#4d5470;
+  --cyan:#00e5ff;--gold:#ffcc00;--purple:#8b5cf6;--red:#ff4060;--green:#22c55e;
+  --fh:'Bebas Neue',sans-serif;--fr:'Rajdhani',sans-serif;--fm:'DM Mono',monospace;
+  --row-img:160px;--card-cols:repeat(auto-fill,minmax(280px,1fr));
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--fr);min-height:100vh;overflow-x:hidden}
+
+/* ═══════════ BG CANVAS ═══════════ */
+.bg-fixed{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.nebula{position:absolute;inset:-50%;width:200%;height:200%;
+  background:
+    radial-gradient(ellipse 50% 40% at 20% 20%,rgba(var(--accR),var(--accG),var(--accB),.07) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 75%,rgba(139,92,246,.09) 0%,transparent 60%),
+    radial-gradient(ellipse 45% 35% at 65% 15%,rgba(0,229,255,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 55% 40% at 30% 85%,rgba(255,64,96,.05) 0%,transparent 60%);
+  animation:neb 20s ease-in-out infinite alternate;transition:background 1s}
+@keyframes neb{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-2%,3%) scale(1.04)}100%{transform:translate(3%,-2%) scale(.96)}}
+.grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(var(--accR),var(--accG),var(--accB),.018) 1px,transparent 1px),
+                  linear-gradient(90deg,rgba(var(--accR),var(--accG),var(--accB),.018) 1px,transparent 1px);
+  background-size:70px 70px;mask-image:linear-gradient(to bottom,transparent 0%,black 8%,black 92%,transparent 100%)}
+.grain{position:absolute;inset:0;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
+#bg-canvas{position:absolute;inset:0}
+
+/* ═══════════ PROGRESS ═══════════ */
+#pbar{position:fixed;top:0;left:0;height:2px;z-index:9000;
+  background:linear-gradient(90deg,var(--purple),var(--acc),var(--cyan));
+  background-size:200% 100%;animation:pshim 1.5s linear infinite;
+  transition:width .4s ease,opacity .5s;box-shadow:0 0 14px var(--acc);pointer-events:none}
+@keyframes pshim{0%{background-position:200% 0}100%{background-position:0 0}}
+
+/* ═══════════ HEADER ═══════════ */
+#site-header{
+  position:sticky;top:0;z-index:200;
+  height:60px;padding:0 32px;
+  display:flex;align-items:center;gap:12px;
+  background:rgba(6,6,15,.9);backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid var(--bdr)}
+.hdr-logo{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;text-decoration:none}
+.hdr-logo-icon{width:30px;height:30px;position:relative;display:flex;align-items:center;justify-content:center}
+.hdr-logo-icon svg{width:30px;height:30px}
+.hdr-logo-text{font-family:var(--fh);font-size:22px;letter-spacing:.1em;
+  background:linear-gradient(90deg,var(--acc),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* global search in header */
+.hdr-search{flex:1;max-width:400px;position:relative}
+.hdr-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;flex-shrink:0}
+.hdr-search input{width:100%;padding:7px 12px 7px 34px;background:rgba(255,255,255,.04);
+  border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-family:var(--fr);font-size:14px;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.hdr-search input::placeholder{color:var(--muted)}
+.hdr-search input:focus{border-color:rgba(var(--accR),var(--accG),var(--accB),.5);box-shadow:0 0 0 3px rgba(var(--accR),var(--accG),var(--accB),.08)}
+
+.hdr-spacer{flex:1}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  position:relative;width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:10px;
+  color:var(--txt2);cursor:pointer;transition:all .2s;flex-shrink:0}
+.icon-btn:hover{background:rgba(var(--accR),var(--accG),var(--accB),.08);border-color:rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc)}
+.icon-btn.active{background:rgba(var(--accR),var(--accG),var(--accB),.12);border-color:rgba(var(--accR),var(--accG),var(--accB),.4);color:var(--acc)}
+.icon-btn .badge{
+  position:absolute;top:-4px;right:-4px;
+  min-width:16px;height:16px;padding:0 4px;
+  background:var(--acc);border-radius:8px;
+  font-family:var(--fm);font-size:9px;font-weight:700;
+  color:#000;display:flex;align-items:center;justify-content:center;
+  transform:scale(0);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.icon-btn .badge.show{transform:scale(1)}
+.refresh-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 16px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.08);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);border-radius:9px;
+  color:var(--acc);font-family:var(--fr);font-size:13px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .25s;white-space:nowrap}
+.refresh-btn:hover{background:rgba(var(--accR),var(--accG),var(--accB),.15);border-color:var(--acc)}
+.refresh-btn svg.spin{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#hdr-timer{font-family:var(--fm);font-size:10px;color:var(--muted);text-align:right;line-height:1.5;white-space:nowrap}
+#hdr-timer em{color:var(--acc);font-style:normal}
+
+/* ═══════════ HERO ═══════════ */
+#hero{
+  position:relative;padding:60px 32px 56px;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;overflow:hidden;min-height:340px;justify-content:center}
+
+/* ── Animated Logo ── */
+.hero-logo{position:relative;width:120px;height:120px;margin:0 auto 24px}
+.logo-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:2px solid rgba(var(--accR),var(--accG),var(--accB),.25);
+  animation:ring-pulse 3s ease-in-out infinite}
+.logo-ring:nth-child(2){inset:-12px;border-color:rgba(var(--accR),var(--accG),var(--accB),.12);animation-delay:.5s;animation-duration:4s}
+.logo-ring:nth-child(3){inset:-24px;border-color:rgba(var(--accR),var(--accG),var(--accB),.06);animation-delay:1s;animation-duration:5s}
+@keyframes ring-pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+
+.logo-orbit{position:absolute;inset:0;animation:logo-orbit 8s linear infinite}
+.logo-orbit-dot{
+  position:absolute;top:2px;left:50%;transform:translateX(-50%);
+  width:7px;height:7px;background:var(--acc);border-radius:50%;
+  box-shadow:0 0 10px var(--acc),0 0 20px rgba(var(--accR),var(--accG),var(--accB),.5)}
+@keyframes logo-orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.logo-orbit2{position:absolute;inset:10px;animation:logo-orbit 12s linear infinite reverse}
+.logo-orbit2 .logo-orbit-dot{width:5px;height:5px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);top:0}
+
+.logo-center{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.logo-hex{
+  width:64px;height:64px;
+  background:linear-gradient(135deg,rgba(var(--accR),var(--accG),var(--accB),.2),rgba(var(--accR),var(--accG),var(--accB),.05));
+  border:2px solid rgba(var(--accR),var(--accG),var(--accB),.4);
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  animation:hex-glow 2.5s ease-in-out infinite;
+  backdrop-filter:blur(10px)}
+@keyframes hex-glow{
+  0%,100%{box-shadow:0 0 20px rgba(var(--accR),var(--accG),var(--accB),.2),inset 0 0 20px rgba(var(--accR),var(--accG),var(--accB),.05)}
+  50%{box-shadow:0 0 40px rgba(var(--accR),var(--accG),var(--accB),.4),inset 0 0 30px rgba(var(--accR),var(--accG),var(--accB),.12)}}
+.logo-hex svg{width:32px;height:32px;color:var(--acc);filter:drop-shadow(0 0 8px var(--acc))}
+
+.hero-title{
+  font-family:var(--fh);font-size:clamp(42px,6vw,80px);
+  letter-spacing:.08em;line-height:1;
+  background:linear-gradient(90deg,var(--acc) 0%,#fff 50%,var(--cyan) 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:title-shine 6s linear infinite;margin-bottom:8px}
+@keyframes title-shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.hero-sub{font-size:15px;color:var(--txt2);letter-spacing:.06em;margin-bottom:28px;max-width:560px}
+.hero-sub strong{color:var(--acc)}
+
+/* hero search */
+.hero-search{
+  position:relative;width:100%;max-width:600px;
+  display:flex;align-items:center;gap:0}
+.hero-search-input{
+  flex:1;padding:14px 16px 14px 48px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.25);
+  border-radius:12px 0 0 12px;
+  color:var(--txt);font-family:var(--fr);font-size:15px;outline:none;
+  transition:all .25s}
+.hero-search-input::placeholder{color:var(--muted)}
+.hero-search-input:focus{background:rgba(255,255,255,.07);border-color:rgba(var(--accR),var(--accG),var(--accB),.5);box-shadow:0 0 0 3px rgba(var(--accR),var(--accG),var(--accB),.08)}
+.hero-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.hero-search-btn{
+  padding:14px 22px;
+  background:var(--acc);border:none;border-radius:0 12px 12px 0;
+  color:#000;font-family:var(--fr);font-size:14px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;white-space:nowrap}
+.hero-search-btn:hover{background:#d4ff20;box-shadow:0 0 30px rgba(var(--accR),var(--accG),var(--accB),.4)}
+
+.hero-tags-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.htag{
+  padding:4px 12px;border-radius:20px;
+  background:rgba(255,255,255,.05);border:1px solid var(--bdr);
+  font-size:12px;color:var(--txt2);letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.htag:hover,.htag.active{background:rgba(var(--accR),var(--accG),var(--accB),.12);border-color:rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc)}
+
+/* ═══════════ STATS BAR ═══════════ */
+.stats-row{
+  display:flex;gap:0;padding:0 32px;margin-bottom:0;
+  border-bottom:1px solid var(--bdr);border-top:1px solid var(--bdr)}
+.stat-box{
+  flex:1;padding:12px 20px;text-align:center;
+  border-right:1px solid var(--bdr);transition:background .2s}
+.stat-box:last-child{border-right:none}
+.stat-val{font-family:var(--fh);font-size:24px;color:var(--acc);display:block;line-height:1}
+.stat-lbl{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+
+/* ═══════════ MAIN LAYOUT ═══════════ */
+#main-layout{
+  display:grid;
+  grid-template-columns:1fr 260px;
+  gap:0;
+  padding:20px 28px 80px;
+  max-width:1600px;margin:0 auto}
+
+/* ── CONTENT COLUMN ── */
+#content-col{min-width:0;padding-right:20px}
+
+/* ── Filter bar above list ── */
+#filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  padding:14px 0;margin-bottom:16px;
+  border-bottom:1px solid var(--bdr);position:sticky;top:60px;z-index:90;
+  background:rgba(6,6,15,.94);backdrop-filter:blur(20px);padding-left:0;padding-right:16px}
+
+.fg{display:flex;align-items:center;gap:1px;
+  background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:9px;padding:3px 5px}
+.fg-lbl{font-size:9px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;padding:4px 7px;white-space:nowrap}
+.chip{padding:5px 12px;border-radius:6px;background:transparent;border:none;
+  color:var(--muted);font-family:var(--fr);font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .15s;white-space:nowrap;letter-spacing:.03em}
+.chip:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.chip.on{background:rgba(var(--accR),var(--accG),var(--accB),.12);color:var(--acc)}
+.chip-sep{width:1px;height:16px;background:var(--bdr);margin:0 1px}
+.view-toggle{display:flex;gap:4px;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:9px;padding:4px}
+.vt-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+  border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.vt-btn.on{background:rgba(var(--accR),var(--accG),var(--accB),.15);color:var(--acc)}
+.sort-select{
+  padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:9px;
+  color:var(--txt);font-family:var(--fr);font-size:12px;outline:none;cursor:pointer}
+.sort-select option{background:#0a0a18}
+.results-label{font-family:var(--fm);font-size:11px;color:var(--muted);white-space:nowrap;margin-left:auto}
+.results-label strong{color:var(--acc)}
+
+/* ── FREE STRIP ── */
+.section-title-row{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.section-title-row h2{font-family:var(--fh);font-size:26px;letter-spacing:.07em}
+.section-title-row h2 .al{color:var(--acc)}
+.section-title-row h2 .ag{color:var(--gold)}
+.sec-count{font-family:var(--fm);font-size:11px;color:var(--muted)}
+.free-strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:14px;margin-bottom:24px;
+  scrollbar-width:thin;scrollbar-color:rgba(var(--accR),var(--accG),var(--accB),.2) transparent}
+.free-strip::-webkit-scrollbar{height:3px}
+.free-strip::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:3px}
+.free-card{
+  flex-shrink:0;width:220px;border-radius:12px;overflow:hidden;cursor:pointer;
+  background:linear-gradient(135deg,rgba(255,204,0,.06),rgba(255,204,0,.02));
+  border:1px solid rgba(255,204,0,.18);transition:all .28s cubic-bezier(.23,1,.32,1);
+  opacity:0;transform:translateX(20px);animation:fx .4s cubic-bezier(.23,1,.32,1) forwards}
+@keyframes fx{to{opacity:1;transform:translateX(0)}}
+.free-card:hover{border-color:rgba(255,204,0,.45);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.free-card-img{width:100%;aspect-ratio:16/7;object-fit:cover;display:block}
+.free-card-body{padding:9px 11px 11px}
+.free-card-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.free-card-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.free-card-cta{display:block;margin-top:8px;padding:7px;text-align:center;text-decoration:none;
+  background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.25);border-radius:7px;
+  color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;transition:all .2s}
+.free-card-cta:hover{background:rgba(255,204,0,.2)}
+
+/* ═══════════ LIST VIEW ═══════════ */
+#deals-list{display:flex;flex-direction:column;gap:8px}
+
+.deal-row{
+  display:flex;align-items:center;gap:0;
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  overflow:hidden;cursor:pointer;
+  transition:all .28s cubic-bezier(.23,1,.32,1);
+  opacity:0;transform:translateY(16px);animation:ry .4s cubic-bezier(.23,1,.32,1) forwards;
+  position:relative}
+@keyframes ry{to{opacity:1;transform:translateY(0)}}
+.deal-row:hover{border-color:rgba(var(--accR),var(--accG),var(--accB),.25);
+  box-shadow:0 0 0 1px rgba(var(--accR),var(--accG),var(--accB),.08),0 12px 40px rgba(0,0,0,.45);
+  transform:translateY(-2px)}
+.deal-row.purchased{
+  opacity:1;
+  border-color:rgba(34,197,94,.25);
+  filter:grayscale(60%) brightness(.65)}
+.deal-row.purchased::after{
+  content:'✓ КУПЛЕНО';position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(6,6,15,.55);
+  font-family:var(--fh);font-size:22px;letter-spacing:.12em;
+  color:rgba(34,197,94,.85);pointer-events:none;
+  border-radius:inherit}
+.deal-row.purchased:hover{filter:grayscale(20%) brightness(.8)}
+
+.gcard.purchased{
+  filter:grayscale(60%) brightness(.65);
+  border-color:rgba(34,197,94,.25)}
+.gcard.purchased::after{
+  content:'✓ КУПЛЕНО';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(6,6,15,.55);
+  font-family:var(--fh);font-size:18px;letter-spacing:.1em;
+  color:rgba(34,197,94,.9);pointer-events:none;
+  border-radius:inherit}
+.gcard.purchased:hover{filter:grayscale(20%) brightness(.8)}
+.row-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.deal-row:hover .row-img img{transform:scale(1.06)}
+.row-img-fb{position:absolute;inset:0;background:linear-gradient(135deg,#0f0f2a,#1a1a3e);display:flex;align-items:center;justify-content:center;font-size:24px;display:none}
+.row-disc{position:absolute;top:6px;left:6px;padding:2px 8px;
+  font-family:var(--fh);font-size:14px;background:var(--acc);color:#000;border-radius:5px;
+  box-shadow:0 3px 12px rgba(var(--accR),var(--accG),var(--accB),.4)}
+
+.row-info{flex:1;padding:10px 14px;min-width:0}
+.row-title{font-family:var(--fr);font-size:15px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.row-pills{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap}
+.pill-meta-g{background:rgba(29,185,84,.15);color:#4ade80}
+.pill-meta-y{background:rgba(245,158,11,.15);color:#fbbf24}
+.pill-meta-r{background:rgba(239,68,68,.15);color:#f87171}
+.pill-meta-n{background:rgba(255,255,255,.06);color:var(--muted)}
+.pill-rating-h{background:rgba(34,197,94,.12);color:#4ade80}
+.pill-rating-m{background:rgba(245,158,11,.12);color:#fbbf24}
+.pill-rating-l{background:rgba(239,68,68,.12);color:#f87171}
+.pill-rating-n{background:rgba(255,255,255,.05);color:var(--muted)}
+.pill-store{background:rgba(59,130,246,.12);color:#60a5fa}
+.row-tags-text{font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.row-price{
+  flex-shrink:0;padding:10px 14px;
+  display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:130px}
+.row-price-now{font-family:var(--fm);font-size:18px;color:var(--acc);font-weight:500;white-space:nowrap}
+.row-price-was{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:line-through;white-space:nowrap}
+.row-price-save{font-size:10px;color:var(--green);font-weight:700}
+.row-ppp{font-size:10px;color:var(--cyan);opacity:.8}
+
+.row-actions{
+  padding:10px 12px;display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-cart{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 12px;border-radius:7px;border:none;cursor:pointer;
+  font-family:var(--fr);font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;transition:all .2s;white-space:nowrap}
+.btn-cart-add{background:rgba(var(--accR),var(--accG),var(--accB),.1);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.25);color:var(--acc)}
+.btn-cart-add:hover{background:rgba(var(--accR),var(--accG),var(--accB),.2)}
+.btn-cart-added{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.btn-buy{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 12px;border-radius:7px;
+  background:var(--acc);border:none;
+  color:#000;font-family:var(--fr);font-size:11px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap}
+.btn-buy:hover{background:#d4ff20;box-shadow:0 0 18px rgba(var(--accR),var(--accG),var(--accB),.3)}
+
+/* ═══════════ GRID VIEW ═══════════ */
+#deals-grid{display:grid;grid-template-columns:var(--card-cols);gap:14px}
+.gcard{
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  overflow:hidden;cursor:pointer;display:flex;flex-direction:column;
+  transition:all .28s cubic-bezier(.23,1,.32,1);
+  opacity:0;transform:translateY(18px);animation:ry .4s cubic-bezier(.23,1,.32,1) forwards;
+  position:relative}
+.gcard:hover{border-color:rgba(var(--accR),var(--accG),var(--accB),.25);
+  box-shadow:0 0 0 1px rgba(var(--accR),var(--accG),var(--accB),.1),0 16px 50px rgba(0,0,0,.5);
+  transform:translateY(-4px)}
+.gcard.purchased-old-remove{opacity:.4;border-color:rgba(34,197,94,.3)}
+.gcard-img{position:relative;aspect-ratio:16/7;overflow:hidden}
+.gcard-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s;display:block}
+.gcard:hover .gcard-img img{transform:scale(1.06)}
+.gcard-img-ov{position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(transparent,rgba(6,6,15,.9))}
+.gcard-disc{position:absolute;top:8px;left:8px;font-family:var(--fh);font-size:16px;padding:2px 9px;border-radius:6px;background:var(--acc);color:#000;box-shadow:0 3px 12px rgba(var(--accR),var(--accG),var(--accB),.4)}
+.gcard-meta{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;font-weight:500}
+.mb-g{background:#1db954;color:#fff}.mb-y{background:#f59e0b;color:#000}.mb-r{background:#ef4444;color:#fff}.mb-n{background:rgba(255,255,255,.1);color:var(--muted);font-size:9px}
+.gcard-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column}
+.gcard-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.gcard-pills{display:flex;gap:5px;flex-wrap:wrap}
+.gcard-price{display:flex;align-items:baseline;gap:7px;margin-top:auto;padding-top:10px;flex-wrap:wrap}
+.gc-now{font-family:var(--fm);font-size:17px;color:var(--acc)}
+.gc-was{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:line-through}
+.gc-save{font-size:10px;color:var(--green);margin-left:auto;font-weight:700}
+.gcard-actions{display:flex;gap:6px;margin-top:8px}
+.gcard-actions .btn-cart{flex:1;padding:7px}
+.gcard-actions .btn-buy{flex:1;padding:7px}
+
+/* ═══════════ LOAD MORE ═══════════ */
+#load-more-wrap{text-align:center;padding:24px 0}
+.btn-load-more{
+  padding:10px 32px;background:transparent;
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);border-radius:9px;
+  color:var(--acc);font-family:var(--fr);font-size:14px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .25s;
+  display:inline-flex;align-items:center;gap:8px}
+.btn-load-more:hover{background:rgba(var(--accR),var(--accG),var(--accB),.08);border-color:var(--acc);box-shadow:0 0 24px rgba(var(--accR),var(--accG),var(--accB),.15)}
+
+/* ═══════════ SIDEBAR ═══════════ */
+#sidebar{padding:0;display:flex;flex-direction:column;gap:12px;align-self:start;position:sticky;top:68px;min-width:0}
+
+/* Game of day */
+.god-card{
+  border-radius:12px;overflow:hidden;border:1px solid var(--bdr);
+  background:rgba(8,8,20,.95);font-size:12px}
+.god-img-wrap{position:relative;height:120px;overflow:hidden;background:linear-gradient(135deg,#0d0d22,#181832)}
+.god-img{width:100%;height:100%;object-fit:cover;display:block}
+.god-img-ov{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg,rgba(8,8,20,1) 0%,rgba(15,15,34,.3) 70%,transparent 100%)}
+.god-eyebrow{
+  position:absolute;top:7px;left:7px;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:4px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.18);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.45);
+  font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--acc);white-space:nowrap;max-width:calc(100% - 14px)}
+.god-eyebrow .god-dot{width:5px;height:5px;background:var(--acc);border-radius:50%;
+  flex-shrink:0;display:inline-block;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.god-body{padding:10px 12px 12px}
+.god-title{font-family:var(--fh);font-size:15px;letter-spacing:.03em;margin-bottom:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.god-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.god-score{padding:2px 7px;border-radius:5px;font-family:var(--fm);font-size:11px;font-weight:500}
+.god-prices{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.gp-badge{font-family:var(--fh);font-size:20px;color:#000;background:var(--acc);padding:1px 8px;border-radius:5px;box-shadow:0 0 16px rgba(var(--accR),var(--accG),var(--accB),.4)}
+.gp-sale{font-family:var(--fm);font-size:17px;color:var(--acc)}
+.gp-orig{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:line-through}
+.god-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  padding:8px;background:var(--acc);border:none;border-radius:8px;
+  color:#000;font-family:var(--fr);font-size:12px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;cursor:pointer;text-decoration:none;
+  transition:all .25s}
+.god-btn:hover{background:#d4ff20;box-shadow:0 0 20px rgba(var(--accR),var(--accG),var(--accB),.4)}
+.god-btn-sec{
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  padding:7px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:8px;
+  color:var(--txt2);font-family:var(--fr);font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;
+  transition:all .2s;margin-top:6px}
+.god-btn-sec:hover{background:rgba(255,255,255,.09)}
+
+/* Sidebar filters */
+.sidebar-filters{border-radius:12px;border:1px solid var(--bdr);background:rgba(8,8,20,.95);padding:12px;color:var(--txt)}
+.sf-title{font-family:var(--fh);font-size:15px;letter-spacing:.07em;margin-bottom:12px;color:var(--txt)}
+.sf-row{margin-bottom:12px}
+.sf-row:last-child{margin-bottom:0}
+.sf-label{font-size:9px;color:var(--txt2);letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px;display:block}
+.range-wrap{position:relative;padding:4px 0}
+.range-wrap input[type=range]{
+  width:100%;appearance:none;-webkit-appearance:none;height:4px;
+  border-radius:2px;outline:none;cursor:pointer;
+  background:rgba(255,255,255,.1)}
+.range-wrap input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--acc);border:2px solid rgba(6,6,15,.8);cursor:pointer;
+  box-shadow:0 0 8px rgba(var(--accR),var(--accG),var(--accB),.6);
+  position:relative;z-index:2}
+.range-wrap input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--acc);border:2px solid rgba(6,6,15,.8);cursor:pointer}
+.range-fill{height:4px;background:var(--acc);border-radius:2px 0 0 2px;pointer-events:none;margin-top:-20px;transition:width .1s}
+.range-vals{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--fm);font-size:10px;color:var(--muted)}
+.range-val-cur{color:var(--acc);font-weight:600}
+.sf-chips{display:flex;gap:5px;flex-wrap:wrap}
+.sf-chip{padding:4px 10px;border-radius:6px;border:1px solid var(--bdr);background:rgba(255,255,255,.04);
+  font-family:var(--fr);font-size:11px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .18s}
+.sf-chip:hover{color:var(--txt);border-color:var(--bdr2);background:rgba(255,255,255,.08)}
+.sf-chip.on{background:rgba(var(--accR),var(--accG),var(--accB),.14);border-color:rgba(var(--accR),var(--accG),var(--accB),.35);color:var(--acc)}
+.sf-toggle{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.sf-toggle-label{font-size:12px;color:var(--txt2);font-weight:600}
+.toggle-switch{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:10px;transition:background .2s}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#aaa;border-radius:50%;transition:transform .2s,background .2s}
+.toggle-switch input:checked ~ .toggle-track{background:rgba(var(--accR),var(--accG),var(--accB),.35)}
+.toggle-switch input:checked ~ .toggle-thumb{transform:translateX(16px);background:var(--acc)}
+.sf-apply{width:100%;padding:9px;background:rgba(var(--accR),var(--accG),var(--accB),.12);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.28);border-radius:8px;color:var(--acc);font-family:var(--fr);font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:14px}
+.sf-apply:hover{background:rgba(var(--accR),var(--accG),var(--accB),.22)}
+.sf-reset{width:100%;padding:7px;background:transparent;border:1px solid var(--bdr);border-radius:8px;color:var(--muted);font-family:var(--fr);font-size:12px;cursor:pointer;transition:all .2s;margin-top:6px}
+.sf-reset:hover{color:var(--txt);border-color:var(--bdr2)}
+
+/* ─── VERSION BADGE ─── */
+.ver-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:6px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.07);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.2);
+  font-family:var(--fm);font-size:10px;color:var(--acc);
+  cursor:pointer;transition:all .2s;position:relative;flex-shrink:0}
+.ver-badge:hover{background:rgba(var(--accR),var(--accG),var(--accB),.14)}
+.ver-num{font-weight:600}
+/* Changelog popup */
+.changelog-popup{
+  position:absolute;top:calc(100% + 8px);left:0;
+  width:240px;
+  background:rgba(8,8,20,.97);border:1px solid rgba(var(--accR),var(--accG),var(--accB),.2);
+  border-radius:12px;padding:14px;z-index:500;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;
+  transition:all .25s cubic-bezier(.23,1,.32,1)}
+.changelog-popup.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.cl-title{font-family:var(--fh);font-size:14px;letter-spacing:.08em;color:var(--acc);margin-bottom:10px}
+.cl-item{display:flex;gap:8px;margin-bottom:7px;font-size:11px;line-height:1.4;color:var(--txt2)}
+.cl-item:last-child{margin-bottom:0}
+.cl-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);margin-top:4px;flex-shrink:0}
+/* ─── SIDEBAR FREE SECTION ─── */
+.sidebar-free{border-radius:12px;border:1px solid rgba(255,204,0,.18);background:rgba(8,8,20,.95);padding:11px;overflow:hidden}
+.sf-free-title{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.sf-free-title h3{font-family:var(--fh);font-size:14px;letter-spacing:.05em;color:var(--gold)}
+.sf-free-count{font-family:var(--fm);font-size:9px;color:var(--muted)}
+.sf-free-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
+.sf-free-list::-webkit-scrollbar{width:3px}
+.sf-free-list::-webkit-scrollbar-thumb{background:rgba(255,204,0,.2);border-radius:3px}
+.sf-free-item{
+  display:flex;gap:7px;align-items:center;
+  padding:5px 7px;border-radius:8px;border:1px solid rgba(255,204,0,.1);
+  background:rgba(255,204,0,.02);cursor:pointer;transition:all .2s}
+.sf-free-item:hover{background:rgba(255,204,0,.06);border-color:rgba(255,204,0,.22)}
+.sf-free-img{width:46px;height:26px;object-fit:cover;border-radius:4px;flex-shrink:0}
+.sf-free-info{min-width:0;flex:1}
+.sf-free-name{font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-free-meta{font-size:9px;color:var(--muted);margin-top:1px}
+.sf-free-btn{
+  padding:2px 7px;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.2);
+  border-radius:4px;color:var(--gold);font-size:8px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;cursor:pointer;text-decoration:none;
+  white-space:nowrap;flex-shrink:0;transition:all .2s}
+.sf-free-btn:hover{background:rgba(255,204,0,.2)}
+#cart-overlay{position:fixed;inset:0;z-index:400;background:rgba(4,4,12,.7);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+#cart-overlay.open{opacity:1;pointer-events:all}
+#cart-panel{
+  position:fixed;top:0;right:0;bottom:0;z-index:401;
+  width:min(400px,100vw);
+  background:rgba(9,9,20,.97);border-left:1px solid var(--bdr);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.23,1,.32,1)}
+#cart-panel.open{transform:translateX(0)}
+.cart-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.cart-head-title{font-family:var(--fh);font-size:22px;letter-spacing:.07em;color:var(--acc)}
+.cart-close{width:32px;height:32px;background:rgba(255,255,255,.06);border:none;border-radius:8px;
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.cart-close:hover{background:rgba(255,255,255,.12);color:var(--txt)}
+.cart-tabs{display:flex;padding:12px 20px 0;gap:8px;flex-shrink:0}
+.cart-tab{padding:6px 14px;border-radius:8px;border:1px solid var(--bdr);background:transparent;
+  color:var(--muted);font-family:var(--fr);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.cart-tab.on{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc)}
+.cart-body{flex:1;overflow-y:auto;padding:12px 16px}
+.cart-body::-webkit-scrollbar{width:3px}
+.cart-body::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:3px}
+.cart-item{
+  display:flex;gap:10px;align-items:center;
+  padding:10px;border-radius:10px;border:1px solid var(--bdr);
+  background:rgba(255,255,255,.02);margin-bottom:8px;position:relative}
+.cart-item-img{width:70px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-price{font-family:var(--fm);font-size:12px;color:var(--acc);margin-top:2px}
+.cart-item-disc{font-size:10px;color:var(--muted)}
+.cart-item-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.cart-item-buy{
+  padding:4px 10px;background:var(--acc);border:none;border-radius:5px;
+  color:#000;font-family:var(--fr);font-size:10px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;cursor:pointer;transition:all .2s;text-decoration:none;
+  display:block;text-align:center}
+.cart-item-buy:hover{background:#d4ff20}
+.cart-item-buy.purchased{background:rgba(34,197,94,.15);color:var(--green);cursor:default}
+.cart-item-del{
+  padding:4px 10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:5px;
+  color:#f87171;font-family:var(--fr);font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.cart-item-del:hover{background:rgba(239,68,68,.15)}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.cart-empty .ce-icon{font-size:40px;display:block;margin-bottom:12px}
+.cart-empty h3{font-family:var(--fh);font-size:18px;color:var(--txt2);margin-bottom:6px}
+.cart-footer{padding:14px 16px;border-top:1px solid var(--bdr);flex-shrink:0}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cart-total-label{font-size:13px;color:var(--txt2)}
+.cart-total-val{font-family:var(--fm);font-size:20px;color:var(--acc)}
+.cart-buy-all{
+  width:100%;padding:11px;background:var(--acc);border:none;border-radius:9px;
+  color:#000;font-family:var(--fr);font-size:14px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+.cart-buy-all:hover{background:#d4ff20;box-shadow:0 0 28px rgba(var(--accR),var(--accG),var(--accB),.3)}
+
+/* ═══════════ SETTINGS MODAL ═══════════ */
+#set-overlay{position:fixed;inset:0;z-index:300;background:rgba(4,4,12,.7);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+#set-overlay.open{opacity:1;pointer-events:all}
+#set-modal{
+  position:fixed;top:68px;right:16px;z-index:301;
+  width:min(520px,96vw);max-height:min(82vh,780px);
+  background:rgba(8,8,20,.97);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.18);border-radius:16px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;
+  transform:translateY(-10px) scale(.97);opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.23,1,.32,1)}
+#set-modal.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.set-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.set-head-title{font-family:var(--fh);font-size:20px;letter-spacing:.08em;color:var(--acc)}
+.set-body{flex:1;overflow-y:auto;padding:16px 20px 20px}
+.set-body::-webkit-scrollbar{width:3px}
+.set-body::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:3px}
+.set-sec{margin-bottom:22px}
+.set-sec:last-child{margin-bottom:0}
+.set-sec-label{font-size:9px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;
+  margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.set-sec-label::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* Language grid */
+.lang-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.lang-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 6px;
+  border-radius:9px;border:1px solid var(--bdr);background:rgba(255,255,255,.02);
+  cursor:pointer;transition:all .18s;text-align:center}
+.lang-item:hover{background:rgba(255,255,255,.05);border-color:var(--bdr2)}
+.lang-item.active{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.35)}
+.lang-flag{font-size:22px;line-height:1}
+.lang-code{font-family:var(--fm);font-size:10px;color:var(--acc)}
+.lang-name{font-size:10px;color:var(--muted)}
+
+/* Color theme */
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.theme-item{
+  border-radius:10px;border:1px solid var(--bdr);background:rgba(255,255,255,.02);
+  padding:10px 8px;cursor:pointer;transition:all .2s;text-align:center}
+.theme-item:hover{transform:translateY(-2px)}
+.theme-item.active{border-width:2px}
+.theme-swatch{width:32px;height:32px;border-radius:8px;margin:0 auto 6px;position:relative}
+.theme-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#000;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s}
+.theme-item.active .theme-swatch::after{opacity:1}
+.theme-name{font-size:10px;color:var(--muted);font-weight:600}
+.theme-item.active .theme-name{color:var(--txt)}
+
+/* Currency in settings */
+.cur-search-wrap{position:relative;margin-bottom:10px}
+.cur-search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.cur-search-wrap input{width:100%;padding:8px 10px 8px 30px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-family:var(--fr);font-size:13px;outline:none}
+.cur-search-wrap input::placeholder{color:var(--muted)}
+.cur-search-wrap input:focus{border-color:rgba(var(--accR),var(--accG),var(--accB),.4)}
+.cur-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:200px;overflow-y:auto}
+.cur-grid::-webkit-scrollbar{width:3px}
+.cur-grid::-webkit-scrollbar-thumb{background:rgba(var(--accR),var(--accG),var(--accB),.2);border-radius:3px}
+
+/* View size */
+.size-row{display:flex;gap:8px;align-items:center}
+.size-opt{
+  flex:1;padding:8px;text-align:center;
+  border-radius:8px;border:1px solid var(--bdr);
+  background:rgba(255,255,255,.02);cursor:pointer;transition:all .18s}
+.size-opt:hover{background:rgba(255,255,255,.05)}
+.size-opt.active{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.35)}
+.size-icon{font-size:18px;display:block;margin-bottom:4px}
+.size-label{font-size:11px;color:var(--muted);font-weight:600}
+.size-opt.active .size-label{color:var(--txt)}
+
+/* Wallpaper style */
+.wp-opts{display:flex;gap:8px}
+.wp-opt{
+  flex:1;padding:10px 8px;text-align:center;
+  border-radius:8px;border:1px solid var(--bdr);
+  background:rgba(255,255,255,.02);cursor:pointer;transition:all .18s;font-size:11px;color:var(--muted)}
+.wp-opt:hover{background:rgba(255,255,255,.05)}
+.wp-opt.active{background:rgba(var(--accR),var(--accG),var(--accB),.1);border-color:rgba(var(--accR),var(--accG),var(--accB),.3);color:var(--acc)}
+
+/* misc settings */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.set-row:last-child{border-bottom:none}
+.set-row-label{font-size:13px;color:var(--txt2);font-weight:600}
+.set-row-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.set-save-note{
+  margin-top:14px;padding:10px 12px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.05);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.12);border-radius:9px;
+  font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ═══════════ NOTIF ═══════════ */
+#notif{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);
+  z-index:999;padding:11px 22px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.1);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);border-radius:10px;
+  color:var(--acc);font-size:13px;font-weight:700;letter-spacing:.04em;
+  opacity:0;transition:all .3s;backdrop-filter:blur(16px);pointer-events:none;white-space:nowrap}
+#notif.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════════ BTT ═══════════ */
+#btt{
+  position:fixed;bottom:28px;right:28px;
+  width:44px;height:44px;border-radius:11px;
+  background:rgba(var(--accR),var(--accG),var(--accB),.1);
+  border:1px solid rgba(var(--accR),var(--accG),var(--accB),.3);
+  color:var(--acc);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;backdrop-filter:blur(16px);z-index:200;
+  opacity:0;transform:translateY(10px);transition:all .25s}
+#btt.v{opacity:1;transform:translateY(0)}
+#btt:hover{background:rgba(var(--accR),var(--accG),var(--accB),.2)}
+
+/* ═══════════ SKELETON ═══════════ */
+.sk{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:6px}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-row{height:80px;border-radius:12px;margin-bottom:8px}
+.sk-card{aspect-ratio:16/7;border-radius:12px}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:960px){
+  #main-layout{grid-template-columns:1fr;padding:16px;gap:16px}
+  #content-col{padding-right:0}
+  #sidebar{padding:0;position:static;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stats-row{overflow-x:auto}
+  .lang-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:600px){
+  #hero{padding:36px 16px 36px}
+  .hero-search{max-width:100%}
+  #main-layout{padding:10px}
+  #filter-bar{padding-right:0}
+  .deal-row{flex-wrap:nowrap}
+  .row-img{width:90px}
+  .row-tags-text,.row-price-save{display:none}
+  .lang-grid{grid-template-columns:repeat(2,1fr)}
+  .theme-grid,.cur-grid{grid-template-columns:1fr 1fr}
+  .changelog-popup{left:0}
+  #sidebar{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-  <div class="wrap">
-    <div class="logo">Steam Deals</div>
+<!-- ═══════════════════════════════════════════════
+     INTRO 1 — TOPZI
+═══════════════════════════════════════════════ -->
+<div id="topzi-wrap">
+<!-- matrix rain background -->
+<canvas id="topzi-bg"></canvas>
+<div class="vignette"></div>
+<div class="scan"></div>
 
-    <div class="status">
-      <span class="dot"></span>
-      Обновление
+<!-- assembling particle canvas -->
+<canvas id="topzi-assemble"></canvas>
+
+<!-- initial blinking cursor before logo -->
+<div class="init-cursor">_</div>
+
+<!-- main logo stage -->
+<div class="stage" id="topzi-stage">
+  <div style="position:relative">
+    <div class="sweep"></div>
+    <div class="bracket-tl"></div>
+    <div class="bracket-tr"></div>
+    <div class="bracket-bl"></div>
+    <div class="bracket-br"></div>
+
+    <div style="display:flex; align-items:baseline; position:relative">
+      <div class="letter-T glitch" id="topzi-letterT">T</div>
+      <div class="opzi-wrap" id="topzi-opzi">
+        <span>o</span><span>p</span><span>z</span><span>i</span>
+      </div>
     </div>
 
-    <h1>Крупная переделка<br><span>на подходе</span></h1>
+    <div class="tagline">
+      <span id="topzi-tagline-text"></span><span class="cursor-blink">_</span>
+    </div>
+  </div>
+</div>
 
-    <p class="sub">
-      Новый интерфейс, новые функции<br>и многое другое.
-    </p>
+<!-- hex floaters -->
+<div class="hex-floats" id="topzi-hexFloats"></div>
+</div>
 
-    <div class="line"></div>
+<!-- ═══════════════════════════════════════════════
+     INTRO 2 — КАИ
+═══════════════════════════════════════════════ -->
+<div id="kai-wrap">
+<div class="vignette"></div>
+<div class="scan"></div>
+<div class="icur">_</div>
 
-    <a class="tg" href="https://t.me/t0pz1" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-      </svg>
-      Topzi
-    </a>
+<div class="stage">
+  <div class="logo-wrap">
+    <div class="sweep"></div>
+
+    <!--
+      SVG viewBox="0 0 900 257" — pixel-accurate based on original image proportions.
+      Oval: x=265 y=70 w=370 h=117 rx=58
+      Wing inner X: 635 (right), 265 (left)
+      Wing outer X: 892 (right), 8 (left)
+      Stripe Y positions calculated from 1920x548 source image scaled to 900px.
+    -->
+    <svg class="logo-svg glitch-once"
+         viewBox="0 0 900 257"
+         xmlns="http://www.w3.org/2000/svg">
+
+      <defs>
+        <!-- Wing fill — slightly lighter at inner edge for depth -->
+        <linearGradient id="wgR" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="#2858d8"/>
+          <stop offset="40%" stop-color="#1e40af"/>
+          <stop offset="100%"stop-color="#192ea0"/>
+        </linearGradient>
+        <linearGradient id="wgL" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0%"  stop-color="#2858d8"/>
+          <stop offset="40%" stop-color="#1e40af"/>
+          <stop offset="100%"stop-color="#192ea0"/>
+        </linearGradient>
+        <!-- Oval body gradient (top brighter, subtle) -->
+        <linearGradient id="ovalG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#2450ce"/>
+          <stop offset="100%"stop-color="#1430a0"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ══════════════ LEFT WING ══════════════
+           Pivot for animation: transform-origin 265px 128px
+           3 parallelogram stripes fanning from oval left edge.
+           Outer tips have a ~8px backward-swept cut (aerodynamic angle).
+      -->
+      <g class="wing-l" id="kai-wL">
+        <!-- stripe 1: TOP — fans significantly upward -->
+        <polygon
+          points="265,82  265,108  13,66   5,40"
+          fill="url(#wgL)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+        <!-- stripe 2: MIDDLE — slight upward tilt -->
+        <polygon
+          points="265,117  265,142  13,133  5,108"
+          fill="url(#wgL)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+        <!-- stripe 3: BOTTOM — fans significantly downward -->
+        <polygon
+          points="265,151  265,176  13,207  5,182"
+          fill="url(#wgL)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+      </g>
+
+      <!-- ══════════════ RIGHT WING ══════════════ -->
+      <g class="wing-r" id="kai-wR">
+        <!-- stripe 1: TOP -->
+        <polygon
+          points="635,82  635,108  887,66   895,40"
+          fill="url(#wgR)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+        <!-- stripe 2: MIDDLE -->
+        <polygon
+          points="635,117  635,142  887,133  895,108"
+          fill="url(#wgR)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+        <!-- stripe 3: BOTTOM -->
+        <polygon
+          points="635,151  635,176  887,207  895,182"
+          fill="url(#wgR)" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>
+      </g>
+
+      <!-- ══════════════ CENTER BODY ══════════════ -->
+      <g class="center">
+
+        <!-- DIAMOND TOP -->
+        <polygon points="450,6  394,70  506,70"
+          fill="url(#ovalG)" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+        <!-- inner line -->
+        <polygon points="450,21  405,70  495,70"
+          fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2.2"/>
+
+        <!-- DIAMOND BOTTOM -->
+        <polygon points="450,251  394,187  506,187"
+          fill="url(#ovalG)" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+        <!-- inner line -->
+        <polygon points="450,236  405,187  495,187"
+          fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2.2"/>
+
+        <!-- OVAL BODY outer fill -->
+        <rect x="265" y="70" width="370" height="117" rx="58"
+          fill="url(#ovalG)" stroke="#fff" stroke-width="6"/>
+        <!-- inner border line -->
+        <rect x="276" y="81" width="348" height="95" rx="50"
+          fill="none" stroke="rgba(255,255,255,.38)" stroke-width="2.2"/>
+
+        <!-- КАИ TEXT -->
+        <text
+          x="450" y="155"
+          text-anchor="middle"
+          font-family="'Exo 2', sans-serif"
+          font-weight="900"
+          font-size="94"
+          fill="#fff"
+          letter-spacing="4"
+        >КАИ</text>
+
+      </g>
+
+    </svg>
   </div>
 
-  <footer>© 2025 STEAM DEALS</footer>
+  <div class="info-block">
+    <div class="separator">
+      <div class="sep-line"></div>
+      <div class="sep-text">Kazan Aviation Institute</div>
+      <div class="sep-line"></div>
+    </div>
+    <div class="tagline">
+      <span id="kai-tgt"></span><span class="cur">_</span>
+    </div>
+    <div class="powered">
+      <span class="pl">Powered &amp; co-funded by</span>
+      <span class="pn">KAI</span>
+    </div>
+  </div>
+</div>
+
+<div class="hf" id="kai-hf"></div>
+</div>
+
+<!-- skip button -->
+<button id="intro-skip" onclick="skipToMain()">Пропустить →</button>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN SITE (hidden until intros done)
+═══════════════════════════════════════════════ -->
+<div id="main-site" style="opacity:0;transition:opacity 1s ease;pointer-events:none">
+
+
+<!-- BG -->
+<div class="bg-fixed">
+  <canvas id="bg-canvas"></canvas>
+  <div class="nebula" id="nebula"></div>
+  <div class="grid-bg"></div>
+  <div class="grain"></div>
+</div>
+
+<div id="pbar" style="width:0;opacity:0"></div>
+<div id="notif"></div>
+
+<!-- ═══ CART PANEL ═══ -->
+<div id="cart-overlay" onclick="closeCart()"></div>
+<div id="cart-panel">
+  <div class="cart-head">
+    <div class="cart-head-title" data-i18n="cart">🛒 Корзина</div>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-tabs">
+    <button class="cart-tab on" id="tab-cart" onclick="setCartTab('cart')">Список</button>
+    <button class="cart-tab" id="tab-bought" onclick="setCartTab('bought')">Куплено</button>
+  </div>
+  <div class="cart-body" id="cart-body"></div>
+  <div class="cart-footer" id="cart-footer"></div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div id="set-overlay" onclick="closeSettings()"></div>
+<div id="set-modal">
+  <div class="set-head">
+    <div class="set-head-title" data-i18n="settings">⚙️ Настройки</div>
+    <button class="cart-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="set-body">
+
+    <!-- Language -->
+    <div class="set-sec">
+      <div class="set-sec-label">🌐 <span data-i18n="language">Язык</span></div>
+      <div class="lang-grid" id="lang-grid"></div>
+    </div>
+
+    <!-- Currency -->
+    <div class="set-sec">
+      <div class="set-sec-label">💱 <span data-i18n="currency">Валюта и регион</span></div>
+      <div class="cur-search-wrap">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="cur-search" placeholder="Поиск..." oninput="buildCurGrid()">
+      </div>
+      <div class="cur-grid" id="cur-grid"></div>
+    </div>
+
+    <!-- Color Theme -->
+    <div class="set-sec">
+      <div class="set-sec-label">🎨 <span data-i18n="colorTheme">Цветовая тема</span></div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- Wallpaper -->
+    <div class="set-sec">
+      <div class="set-sec-label">🌌 <span data-i18n="wallpaper">Живые обои</span></div>
+      <div class="wp-opts" id="wp-opts">
+        <div class="wp-opt active" data-wp="nebula" onclick="setWP(this,'nebula')">🌌 Туманность</div>
+        <div class="wp-opt" data-wp="matrix" onclick="setWP(this,'matrix')">💻 Матрица</div>
+        <div class="wp-opt" data-wp="stars" onclick="setWP(this,'stars')">✨ Звёзды</div>
+        <div class="wp-opt" data-wp="none" onclick="setWP(this,'none')">🚫 Выкл.</div>
+      </div>
+    </div>
+
+    <!-- View size -->
+    <div class="set-sec">
+      <div class="set-sec-label">📐 <span data-i18n="viewSize">Вид и размер</span></div>
+      <div class="size-row">
+        <div class="size-opt active" data-sz="list" onclick="setSz(this,'list')">
+          <span class="size-icon">≡</span><div class="size-label">Список</div>
+        </div>
+        <div class="size-opt" data-sz="grid-sm" onclick="setSz(this,'grid-sm')">
+          <span class="size-icon">⊞</span><div class="size-label">Сетка S</div>
+        </div>
+        <div class="size-opt" data-sz="grid-md" onclick="setSz(this,'grid-md')">
+          <span class="size-icon">▦</span><div class="size-label">Сетка M</div>
+        </div>
+        <div class="size-opt" data-sz="grid-lg" onclick="setSz(this,'grid-lg')">
+          <span class="size-icon">◫</span><div class="size-label">Сетка L</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Misc toggles -->
+    <div class="set-sec">
+      <div class="set-sec-label">🔧 Прочее</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Показывать PPP-подсказки</div><div class="set-row-sub">Насколько регион выгоднее США</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="tog-ppp" checked onchange="saveSetting('showPPP',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="set-row">
+        <div><div class="set-row-label">Показывать купленные</div><div class="set-row-sub">Скрывать/приглушать куплено</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="tog-hide-bought" onchange="saveSetting('hideBought',this.checked);applyFilters()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="set-row">
+        <div><div class="set-row-label">Только с Metacritic</div><div class="set-row-sub">Скрывать игры без оценки</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="tog-meta-only" onchange="saveSetting('metaOnly',this.checked);applyFilters()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+    </div>
+
+    <div class="set-save-note">💾 Все настройки автоматически сохраняются в браузере</div>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header id="site-header">
+  <!-- Version badge -->
+  <div class="ver-badge" onclick="toggleChangelog(this)" title="История обновлений">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="ver-num">v1.3</span>
+    <div class="changelog-popup" id="changelog-popup">
+      
+      <!-- Topzi × КАИ mini emblem -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;padding:7px 0;border-bottom:1px solid rgba(200,255,0,.1)">
+        <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <!-- KAI wings mini -->
+          <polygon points="10,11 10,14 2,12.5 1,10" fill="#1e40af" stroke="#fff" stroke-width=".8"/>
+          <polygon points="10,14 10,17 2,17.5 1,15" fill="#1e40af" stroke="#fff" stroke-width=".8"/>
+          <polygon points="18,11 18,14 26,12.5 27,10" fill="#1e40af" stroke="#fff" stroke-width=".8"/>
+          <polygon points="18,14 18,17 26,17.5 27,15" fill="#1e40af" stroke="#fff" stroke-width=".8"/>
+          <rect x="9" y="9" width="10" height="10" rx="3" fill="#1e3a8a" stroke="#fff" stroke-width=".9"/>
+          <text x="14" y="16.5" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="6" fill="#fff">КАИ</text>
+        </svg>
+        <span style="font-family:var(--fm);font-size:9px;color:rgba(200,255,0,.5);letter-spacing:.1em">×</span>
+        <!-- Topzi T mini -->
+        <svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+          <text x="11" y="18" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="900" font-size="18" fill="none" stroke="#00e5ff" stroke-width="1.2" style="filter:drop-shadow(0 0 4px #00e5ff)">T</text>
+          <text x="11" y="18" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="900" font-size="18" fill="#e0f8ff">T</text>
+        </svg>
+      </div>
+      <div class="cl-title">📋 Обновления v1.3</div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Сайдбар перенесён влево, игра дня всегда видна</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Корзина с вкладкой «Куплено» + сохранение</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Бесплатные игры в сайдбаре</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>12 цветовых тем + 4 вида живых обоев</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>8 языков + авто-определение</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Глубокие фильтры: ползунки MC, цена, рейтинг</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Вид список/сетка, пакетная загрузка</div></div>
+      <div class="cl-item"><div class="cl-dot"></div><div>Фавиконка сайта + все настройки сохраняются</div></div>
+    </div>
+  </div>
+
+  <a class="hdr-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;text-decoration:none">
+    <div class="hdr-logo-icon">
+      <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="15,2 18.5,10.5 28,11.5 21,18 23,27.5 15,23 7,27.5 9,18 2,11.5 11.5,10.5"
+          fill="rgba(200,255,0,.12)" stroke="rgba(200,255,0,.8)" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="hdr-logo-text">DEALSHARK</div>
+  </a>
+
+  <div class="hdr-search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="hdr-search-input" data-i18n-ph="searchGame" placeholder="Поиск игры..." oninput="onSearch(this.value)">
+  </div>
+
+  <div class="hdr-spacer"></div>
+  <div class="hdr-right">
+    <div id="hdr-timer"><span data-i18n="updated">Обновлено</span>: <em id="upd-time">—</em><br><span id="countdown" style="color:var(--muted)">—</span></div>
+
+    <div class="icon-btn" id="cur-hdr-btn" title="Валюта" onclick="toggleSettings()">
+      <span id="cur-hdr-flag" style="font-size:16px">🇺🇸</span>
+    </div>
+
+    <div class="icon-btn" onclick="toggleSettings()" title="Настройки">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+
+    <div class="icon-btn" id="cart-btn" onclick="toggleCart()" title="Корзина">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="badge" id="cart-badge">0</span>
+    </div>
+
+    <button class="refresh-btn" id="refreshBtn" onclick="startFetch(true)">
+      <svg id="rIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      <span data-i18n="refresh">Обновить</span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <!-- Animated Logo -->
+  <div class="hero-logo">
+    <div class="logo-ring"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-orbit"><div class="logo-orbit-dot"></div></div>
+    <div class="logo-orbit2"><div class="logo-orbit-dot"></div></div>
+    <div class="logo-center">
+      <div class="logo-hex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <h1 class="hero-title">DEALSHARK</h1>
+  <p class="hero-sub"><span data-i18n="heroSub">Горящие скидки Steam · Только</span> <strong data-i18n="topGames">топовые игры</strong> · <span data-i18n="realTime">в реальном времени</span></p>
+
+  <div class="hero-search">
+    <svg class="hero-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="hero-search-input" type="text" id="hero-search" data-i18n-ph="searchGame" placeholder="Поиск игры..." oninput="onSearch(this.value)">
+    <button class="hero-search-btn" data-i18n="searchBtn">Найти</button>
+  </div>
+
+  <div class="hero-tags-row" id="hero-tags-row">
+    <span class="htag active" data-tag="" onclick="setTag(this,'')">Все</span>
+    <span class="htag" data-tag="70" onclick="setTag(this,'70')">70%+</span>
+    <span class="htag" data-tag="90" onclick="setTag(this,'90')">90%+</span>
+    <span class="htag" data-tag="free" onclick="setTag(this,'free')">🆓 Бесплатно</span>
+    <span class="htag" data-tag="meta" onclick="setTag(this,'meta')">⭐ Metacritic 80+</span>
+    <span class="htag" data-tag="cheap" onclick="setTag(this,'cheap')">💸 до $5</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-row" id="stats-row">
+  <div class="stat-box"><span class="stat-val" id="s-total">—</span><span class="stat-lbl" data-i18n="totalGames">Игр</span></div>
+  <div class="stat-box"><span class="stat-val" id="s-free">—</span><span class="stat-lbl" data-i18n="freeGames">Бесплатно</span></div>
+  <div class="stat-box"><span class="stat-val" id="s-maxd">—</span><span class="stat-lbl" data-i18n="maxDisc">Макс. скидка</span></div>
+  <div class="stat-box"><span class="stat-val" id="s-avgd">—</span><span class="stat-lbl" data-i18n="avgDisc">Средняя скидка</span></div>
+  <div class="stat-box"><span class="stat-val" id="s-cart">0</span><span class="stat-lbl" data-i18n="inCart">В корзине</span></div>
+</div>
+
+<!-- ═══ MAIN LAYOUT ═══ -->
+<div id="main-layout">
+  <!-- CONTENT -->
+  <div id="content-col">
+    <!-- Filter bar -->
+    <div id="filter-bar">
+      <div class="fg">
+        <span class="fg-lbl" data-i18n="discount">Скидка</span><div class="chip-sep"></div>
+        <button class="chip on" data-f="disc" data-v="0" onclick="setF('disc',this)" data-i18n="all">Все</button>
+        <button class="chip" data-f="disc" data-v="50" onclick="setF('disc',this)">50%+</button>
+        <button class="chip" data-f="disc" data-v="70" onclick="setF('disc',this)">70%+</button>
+        <button class="chip" data-f="disc" data-v="80" onclick="setF('disc',this)">80%+</button>
+        <button class="chip" data-f="disc" data-v="90" onclick="setF('disc',this)">90%+</button>
+      </div>
+      <div class="fg">
+        <span class="fg-lbl" data-i18n="price">Цена</span><div class="chip-sep"></div>
+        <button class="chip on" data-f="price" data-v="9999" onclick="setF('price',this)" data-i18n="any">Любая</button>
+        <button class="chip" data-f="price" data-v="5" onclick="setF('price',this)">≤$5</button>
+        <button class="chip" data-f="price" data-v="10" onclick="setF('price',this)">≤$10</button>
+        <button class="chip" data-f="price" data-v="20" onclick="setF('price',this)">≤$20</button>
+      </div>
+      <select class="sort-select" onchange="setSortBy(this.value)">
+        <option value="savings">Скидка ↓</option>
+        <option value="price">Цена ↑</option>
+        <option value="meta">Metacritic</option>
+        <option value="rating">Рейтинг</option>
+        <option value="name">Название</option>
+      </select>
+      <div class="view-toggle">
+        <button class="vt-btn on" id="vt-list" onclick="setViewMode('list')" title="Список">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+        <button class="vt-btn" id="vt-grid" onclick="setViewMode('grid')" title="Сетка">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+      </div>
+      <span class="results-label"><strong id="shown-count">0</strong> <span data-i18n="shown">игр</span></span>
+    </div>
+
+    <!-- Free games strip -->
+    <div id="free-section">
+      <div class="section-title-row">
+        <h2>🆓 <span class="ag" data-i18n="freeNow">Бесплатные</span></h2>
+        <span class="sec-count" id="free-count-label">0 игр</span>
+      </div>
+      <div class="free-strip" id="free-strip"></div>
+    </div>
+
+    <!-- Deals title -->
+    <div class="section-title-row">
+      <h2>🔥 <span class="al" data-i18n="hotDeals">Горящие скидки</span></h2>
+    </div>
+
+    <!-- LIST -->
+    <div id="deals-list"></div>
+    <!-- GRID (hidden by default) -->
+    <div id="deals-grid" style="display:none"></div>
+
+    <div id="load-more-wrap" style="display:none">
+      <button class="btn-load-more" onclick="renderNextBatch()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        <span data-i18n="loadMore">Показать ещё</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <!-- Free Games in Sidebar — TOP -->
+    <div class="sidebar-free" id="sidebar-free" style="display:none">
+      <div class="sf-free-title">
+        <h3>🆓 Бесплатно</h3>
+        <span class="sf-free-count" id="sf-free-count"></span>
+      </div>
+      <div class="sf-free-list" id="sf-free-list"></div>
+    </div>
+
+    <!-- Game of Day -->
+    <div class="god-card" id="god-card">
+      <div class="god-img-wrap">
+        <img class="god-img" id="god-img" src="" alt="">
+        <div class="god-img-ov"></div>
+        <div class="god-eyebrow"><span class="god-dot"></span><span data-i18n="gameOfDay">Игра дня</span></div>
+      </div>
+      <div class="god-body">
+        <div class="god-title" id="god-title">—</div>
+        <div class="god-meta" id="god-meta"></div>
+        <div class="god-prices" id="god-prices"></div>
+        <a class="god-btn" id="god-link" href="#" target="_blank">⚡ <span data-i18n="getSteam">Забрать в Steam</span></a>
+        <a class="god-btn-sec" id="god-cart-btn" href="#" onclick="return false">🛒 <span data-i18n="addCart">В корзину</span></a>
+      </div>
+    </div>
+
+    <!-- Deep filters -->
+    <div class="sidebar-filters">
+      <div class="sf-title" data-i18n="filters">🎛 Фильтры</div>
+
+      <div class="sf-row">
+        <span class="sf-label" data-i18n="discRange">Диапазон скидки</span>
+        <div class="range-wrap">
+          <input type="range" id="sf-disc" min="0" max="100" value="0" oninput="updateRangeDisc(this)">
+          <div class="range-vals"><span>0%</span><span class="range-val-cur" id="sf-disc-val">0%+</span><span>100%</span></div>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <span class="sf-label" data-i18n="maxPrice">Макс. цена</span>
+        <div class="range-wrap">
+          <input type="range" id="sf-price" min="0" max="60" value="60" oninput="updateRangePrice(this)">
+          <div class="range-vals"><span>$0</span><span class="range-val-cur" id="sf-price-val">Любая</span><span>$60+</span></div>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <span class="sf-label" data-i18n="minMeta">Metacritic ≥</span>
+        <div class="range-wrap">
+          <input type="range" id="sf-meta" min="0" max="100" value="0" step="5" oninput="updateRangeMeta(this)">
+          <div class="range-vals"><span>0</span><span class="range-val-cur" id="sf-meta-val">Любой</span><span>100</span></div>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <span class="sf-label">Steam рейтинг</span>
+        <div class="sf-chips">
+          <button class="sf-chip on" data-sfr="0" onclick="setSfRating(this,0)">Все</button>
+          <button class="sf-chip" data-sfr="60" onclick="setSfRating(this,60)">60%+</button>
+          <button class="sf-chip" data-sfr="70" onclick="setSfRating(this,70)">70%+</button>
+          <button class="sf-chip" data-sfr="80" onclick="setSfRating(this,80)">80%+</button>
+          <button class="sf-chip" data-sfr="90" onclick="setSfRating(this,90)">90%+</button>
+        </div>
+      </div>
+
+      <div class="sf-toggle">
+        <div class="sf-toggle-label">Только со скидкой &gt;50%</div>
+        <label class="toggle-switch"><input type="checkbox" id="sf-big-disc" onchange="applyFilters()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+      <div class="sf-toggle">
+        <div class="sf-toggle-label">Только оценённые в MC</div>
+        <label class="toggle-switch"><input type="checkbox" id="sf-has-mc" onchange="applyFilters()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+      </div>
+
+      <button class="sf-apply" onclick="applyFilters()">Применить</button>
+      <button class="sf-reset" onclick="resetSidebarFilters()">Сбросить фильтры</button>
+    </div>
+  </div>
+</div>
+
+<div id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// THEMES
+// ══════════════════════════════════════════════
+const THEMES={
+  lime:  {acc:'#c8ff00',r:200,g:255,b:0,   name:'Lime',  emoji:'🟢'},
+  cyan:  {acc:'#00e5ff',r:0,  g:229,b:255, name:'Cyan',  emoji:'🔵'},
+  blue:  {acc:'#4d9eff',r:77, g:158,b:255, name:'Blue',  emoji:'💙'},
+  purple:{acc:'#c084fc',r:192,g:132,b:252, name:'Purple',emoji:'💜'},
+  orange:{acc:'#ff8c42',r:255,g:140,b:66,  name:'Orange',emoji:'🔶'},
+  pink:  {acc:'#ff5fa0',r:255,g:95, b:160, name:'Pink',  emoji:'🩷'},
+  red:   {acc:'#ff4060',r:255,g:64, b:96,  name:'Red',   emoji:'❤️'},
+  gold:  {acc:'#ffcc00',r:255,g:204,b:0,   name:'Gold',  emoji:'✨'},
+  white: {acc:'#e8eaf6',r:232,g:234,b:246, name:'White', emoji:'⬜'},
+  mint:  {acc:'#00ffcc',r:0,  g:255,b:204, name:'Mint',  emoji:'💚'},
+  rose:  {acc:'#fb7185',r:251,g:113,b:133, name:'Rose',  emoji:'🌸'},
+  sky:   {acc:'#38bdf8',r:56, g:189,b:248, name:'Sky',   emoji:'🌤'},
+};
+
+// ══════════════════════════════════════════════
+// LANGUAGES
+// ══════════════════════════════════════════════
+const LANGS={
+  ru:{flag:'🇷🇺',code:'RU',name:'Русский',
+    heroSub:'Горящие скидки Steam · Только',topGames:'топовые игры',realTime:'в реальном времени',
+    searchGame:'Поиск игры...',searchBtn:'Найти',updated:'Обновлено',autoIn:'Авто через',
+    refresh:'Обновить',settings:'⚙️ Настройки',language:'Язык',currency:'Валюта и регион',
+    colorTheme:'Цветовая тема',wallpaper:'Живые обои',viewSize:'Вид и размер',
+    cart:'🛒 Корзина',addCart:'В корзину',inCart:'В корзине',
+    totalGames:'Игр',freeGames:'Бесплатно',maxDisc:'Макс. скидка',avgDisc:'Средняя скидка',
+    all:'Все',any:'Любая',discount:'Скидка',price:'Цена',shown:'игр',
+    freeNow:'Бесплатные',hotDeals:'Горящие скидки',gameOfDay:'Игра дня',
+    getSteam:'Забрать в Steam',reviews:'Обзоры',noRating:'Нет оценок',
+    loadMore:'Показать ещё',filters:'🎛 Фильтры',
+    discRange:'Диапазон скидки',maxPrice:'Макс. цена',minMeta:'Metacritic ≥',
+    getFree:'Получить бесплатно',buyNow:'Купить',
+    cartEmpty:'Корзина пуста',addedToCart:'добавлено в корзину',
+    boughtTitle:'Куплено',removedFrom:'убрано из',markBought:'Куплено ✓',
+    noResults:'Ничего не найдено',
+    cheaper:x=>`💚 В ${x}× дешевле`,same:'⚪ Как в США',pricier:x=>`🔴 +${x}% дороже США`,
+  },
+  en:{flag:'🇺🇸',code:'EN',name:'English',
+    heroSub:'Steam Hot Deals · Only',topGames:'top games',realTime:'real time',
+    searchGame:'Search game...',searchBtn:'Search',updated:'Updated',autoIn:'Auto in',
+    refresh:'Refresh',settings:'⚙️ Settings',language:'Language',currency:'Currency & Region',
+    colorTheme:'Color Theme',wallpaper:'Wallpaper',viewSize:'View Size',
+    cart:'🛒 Cart',addCart:'Add to Cart',inCart:'In Cart',
+    totalGames:'Games',freeGames:'Free',maxDisc:'Max Discount',avgDisc:'Avg Discount',
+    all:'All',any:'Any',discount:'Discount',price:'Price',shown:'games',
+    freeNow:'Free Now',hotDeals:'Hot Deals',gameOfDay:'Game of the Day',
+    getSteam:'Get on Steam',reviews:'Reviews',noRating:'No ratings',
+    loadMore:'Load More',filters:'🎛 Filters',
+    discRange:'Discount Range',maxPrice:'Max Price',minMeta:'Metacritic ≥',
+    getFree:'Get Free',buyNow:'Buy',
+    cartEmpty:'Cart is empty',addedToCart:'added to cart',
+    boughtTitle:'Purchased',removedFrom:'removed from',markBought:'Purchased ✓',
+    noResults:'Nothing found',
+    cheaper:x=>`💚 ${x}× cheaper`,same:'⚪ Same as US',pricier:x=>`🔴 +${x}% pricier`,
+  },
+  kz:{flag:'🇰🇿',code:'KZ',name:'Қазақша',
+    heroSub:'Steam ыстық жеңілдіктер · Тек',topGames:'үздік ойындар',realTime:'нақты уақытта',
+    searchGame:'Ойын іздеу...',searchBtn:'Іздеу',updated:'Жаңартылды',autoIn:'Авто',
+    refresh:'Жаңарту',settings:'⚙️ Параметрлер',language:'Тіл',currency:'Валюта',
+    colorTheme:'Түс тақырыбы',wallpaper:'Тірі тұсқағаз',viewSize:'Көрініс',
+    cart:'🛒 Себет',addCart:'Себетке',inCart:'Себетте',
+    totalGames:'Ойын',freeGames:'Тегін',maxDisc:'Макс. жеңілдік',avgDisc:'Орта жеңілдік',
+    all:'Барлығы',any:'Кез келген',discount:'Жеңілдік',price:'Баға',shown:'ойын',
+    freeNow:'Тегін',hotDeals:'Ыстық жеңілдіктер',gameOfDay:'Күннің ойыны',
+    getSteam:'Steam-де алу',reviews:'Пікірлер',noRating:'Бағалар жоқ',
+    loadMore:'Тағы',filters:'🎛 Сүзгілер',
+    discRange:'Жеңілдік аралығы',maxPrice:'Макс. баға',minMeta:'Metacritic ≥',
+    getFree:'Тегін алу',buyNow:'Сатып алу',
+    cartEmpty:'Себет бос',addedToCart:'себетке қосылды',
+    boughtTitle:'Сатып алынды',removedFrom:'алынып тасталды',markBought:'Сатып алынды ✓',
+    noResults:'Ештеңе табылмады',
+    cheaper:x=>`💚 ${x}× арзан`,same:'⚪ АҚШ сияқты',pricier:x=>`🔴 +${x}% қымбат`,
+  },
+  zh:{flag:'🇨🇳',code:'ZH',name:'中文',
+    heroSub:'Steam热门优惠 · 仅',topGames:'顶级游戏',realTime:'实时',
+    searchGame:'搜索游戏...',searchBtn:'搜索',updated:'已更新',autoIn:'自动',
+    refresh:'刷新',settings:'⚙️ 设置',language:'语言',currency:'货币和地区',
+    colorTheme:'颜色主题',wallpaper:'动态壁纸',viewSize:'视图大小',
+    cart:'🛒 购物车',addCart:'加入购物车',inCart:'在购物车',
+    totalGames:'游戏',freeGames:'免费',maxDisc:'最大折扣',avgDisc:'平均折扣',
+    all:'全部',any:'任意',discount:'折扣',price:'价格',shown:'款',
+    freeNow:'免费',hotDeals:'热门折扣',gameOfDay:'今日游戏',
+    getSteam:'在Steam获取',reviews:'评测',noRating:'暂无评分',
+    loadMore:'加载更多',filters:'🎛 筛选',
+    discRange:'折扣范围',maxPrice:'最高价格',minMeta:'Metacritic ≥',
+    getFree:'免费获取',buyNow:'购买',
+    cartEmpty:'购物车为空',addedToCart:'已添加到购物车',
+    boughtTitle:'已购买',removedFrom:'已从购物车移除',markBought:'已购买 ✓',
+    noResults:'未找到结果',
+    cheaper:x=>`💚 便宜${x}倍`,same:'⚪ 与美国相同',pricier:x=>`🔴 贵${x}%`,
+  },
+  de:{flag:'🇩🇪',code:'DE',name:'Deutsch',
+    heroSub:'Steam Angebote · Nur',topGames:'Top-Spiele',realTime:'Echtzeit',
+    searchGame:'Spiel suchen...',searchBtn:'Suchen',updated:'Aktualisiert',autoIn:'Auto in',
+    refresh:'Aktualisieren',settings:'⚙️ Einstellungen',language:'Sprache',currency:'Währung',
+    colorTheme:'Farbthema',wallpaper:'Hintergrund',viewSize:'Ansicht',
+    cart:'🛒 Warenkorb',addCart:'In den Warenkorb',inCart:'Im Warenkorb',
+    totalGames:'Spiele',freeGames:'Kostenlos',maxDisc:'Max. Rabatt',avgDisc:'Ø Rabatt',
+    all:'Alle',any:'Beliebig',discount:'Rabatt',price:'Preis',shown:'Spiele',
+    freeNow:'Kostenlos',hotDeals:'Heiße Angebote',gameOfDay:'Spiel des Tages',
+    getSteam:'Auf Steam',reviews:'Bewertungen',noRating:'Keine Bewertungen',
+    loadMore:'Mehr laden',filters:'🎛 Filter',
+    discRange:'Rabattbereich',maxPrice:'Höchstpreis',minMeta:'Metacritic ≥',
+    getFree:'Gratis holen',buyNow:'Kaufen',
+    cartEmpty:'Warenkorb leer',addedToCart:'zum Warenkorb hinzugefügt',
+    boughtTitle:'Gekauft',removedFrom:'entfernt',markBought:'Gekauft ✓',
+    noResults:'Nichts gefunden',
+    cheaper:x=>`💚 ${x}× günstiger`,same:'⚪ Wie USA',pricier:x=>`🔴 +${x}% teurer`,
+  },
+  tr:{flag:'🇹🇷',code:'TR',name:'Türkçe',
+    heroSub:"Steam Fırsatları · Sadece",topGames:'en iyi oyunlar',realTime:'gerçek zamanlı',
+    searchGame:'Oyun ara...',searchBtn:'Ara',updated:'Güncellendi',autoIn:'Oto.',
+    refresh:'Yenile',settings:'⚙️ Ayarlar',language:'Dil',currency:'Para Birimi',
+    colorTheme:'Renk Teması',wallpaper:'Canlı Arka Plan',viewSize:'Görünüm',
+    cart:'🛒 Sepet',addCart:'Sepete Ekle',inCart:'Sepette',
+    totalGames:'Oyun',freeGames:'Ücretsiz',maxDisc:'Maks. İndirim',avgDisc:'Ort. İndirim',
+    all:'Tümü',any:'Herhangi',discount:'İndirim',price:'Fiyat',shown:'oyun',
+    freeNow:'Ücretsiz',hotDeals:'Sıcak Fırsatlar',gameOfDay:'Günün Oyunu',
+    getSteam:"Steam'de Al",reviews:'İncelemeler',noRating:'Derecelendirme yok',
+    loadMore:'Daha Fazla',filters:'🎛 Filtreler',
+    discRange:'İndirim Aralığı',maxPrice:'Maks. Fiyat',minMeta:'Metacritic ≥',
+    getFree:'Ücretsiz Al',buyNow:'Satın Al',
+    cartEmpty:'Sepet boş',addedToCart:'sepete eklendi',
+    boughtTitle:'Satın Alındı',removedFrom:'sepetten kaldırıldı',markBought:'Satın Alındı ✓',
+    noResults:'Sonuç bulunamadı',
+    cheaper:x=>`💚 ${x}× daha ucuz`,same:'⚪ ABD ile aynı',pricier:x=>`🔴 +${x}% daha pahalı`,
+  },
+  ja:{flag:'🇯🇵',code:'JA',name:'日本語',
+    heroSub:'Steamホットディール · のみ',topGames:'トップゲーム',realTime:'リアルタイム',
+    searchGame:'ゲームを検索...',searchBtn:'検索',updated:'更新',autoIn:'自動更新',
+    refresh:'更新',settings:'⚙️ 設定',language:'言語',currency:'通貨と地域',
+    colorTheme:'カラーテーマ',wallpaper:'ライブ壁紙',viewSize:'表示サイズ',
+    cart:'🛒 カート',addCart:'カートに追加',inCart:'カート内',
+    totalGames:'ゲーム',freeGames:'無料',maxDisc:'最大割引',avgDisc:'平均割引',
+    all:'全て',any:'全て',discount:'割引',price:'価格',shown:'本',
+    freeNow:'無料',hotDeals:'ホットディール',gameOfDay:'今日のゲーム',
+    getSteam:'Steamで入手',reviews:'レビュー',noRating:'評価なし',
+    loadMore:'もっと見る',filters:'🎛 フィルター',
+    discRange:'割引範囲',maxPrice:'最高価格',minMeta:'Metacritic ≥',
+    getFree:'無料で取得',buyNow:'購入',
+    cartEmpty:'カートは空です',addedToCart:'カートに追加',
+    boughtTitle:'購入済み',removedFrom:'削除',markBought:'購入済み ✓',
+    noResults:'結果が見つかりません',
+    cheaper:x=>`💚 ${x}倍安い`,same:'⚪ 米国と同じ',pricier:x=>`🔴 +${x}%高い`,
+  },
+  ko:{flag:'🇰🇷',code:'KO',name:'한국어',
+    heroSub:'Steam 특가 · 오직',topGames:'최고의 게임',realTime:'실시간',
+    searchGame:'게임 검색...',searchBtn:'검색',updated:'업데이트됨',autoIn:'자동',
+    refresh:'새로고침',settings:'⚙️ 설정',language:'언어',currency:'통화 및 지역',
+    colorTheme:'색상 테마',wallpaper:'라이브 배경화면',viewSize:'보기 크기',
+    cart:'🛒 장바구니',addCart:'장바구니에 추가',inCart:'장바구니',
+    totalGames:'게임',freeGames:'무료',maxDisc:'최대 할인',avgDisc:'평균 할인',
+    all:'전체',any:'모두',discount:'할인',price:'가격',shown:'개',
+    freeNow:'무료',hotDeals:'특가',gameOfDay:'오늘의 게임',
+    getSteam:'Steam에서 받기',reviews:'리뷰',noRating:'평점 없음',
+    loadMore:'더 보기',filters:'🎛 필터',
+    discRange:'할인 범위',maxPrice:'최고 가격',minMeta:'Metacritic ≥',
+    getFree:'무료로 받기',buyNow:'구매',
+    cartEmpty:'장바구니가 비어있습니다',addedToCart:'장바구니에 추가됨',
+    boughtTitle:'구매 완료',removedFrom:'삭제됨',markBought:'구매 완료 ✓',
+    noResults:'결과 없음',
+    cheaper:x=>`💚 ${x}배 저렴`,same:'⚪ 미국과 동일',pricier:x=>`🔴 +${x}% 비쌈`,
+  },
+};
+
+// ══════════════════════════════════════════════
+// CURRENCIES (PPP multipliers)
+// ══════════════════════════════════════════════
+const CURRENCIES={
+  USD:{flag:'🇺🇸',name:'US Dollar',sym:'$',rate:1,ppp:1.00,g:'am'},
+  EUR:{flag:'🇪🇺',name:'Euro',sym:'€',rate:.92,ppp:.93,g:'eu'},
+  GBP:{flag:'🇬🇧',name:'Pound',sym:'£',rate:.79,ppp:.91,g:'eu'},
+  RUB:{flag:'🇷🇺',name:'Рубль',sym:'₽',rate:91,ppp:.32,g:'cis'},
+  KZT:{flag:'🇰🇿',name:'Тенге',sym:'₸',rate:463,ppp:.43,g:'cis'},
+  UAH:{flag:'🇺🇦',name:'Гривна',sym:'₴',rate:41.5,ppp:.38,g:'eu'},
+  TRY:{flag:'🇹🇷',name:'Lira',sym:'₺',rate:34.2,ppp:.25,g:'me'},
+  CNY:{flag:'🇨🇳',name:'元',sym:'¥',rate:7.24,ppp:.52,g:'asia'},
+  JPY:{flag:'🇯🇵',name:'円',sym:'¥',rate:149,ppp:.72,g:'asia'},
+  KRW:{flag:'🇰🇷',name:'원',sym:'₩',rate:1328,ppp:.72,g:'asia'},
+  INR:{flag:'🇮🇳',name:'Rupee',sym:'₹',rate:83.5,ppp:.42,g:'asia'},
+  BRL:{flag:'🇧🇷',name:'Real',sym:'R$',rate:5.10,ppp:.52,g:'am'},
+  MXN:{flag:'🇲🇽',name:'Peso',sym:'MX$',rate:17.3,ppp:.62,g:'am'},
+  ARS:{flag:'🇦🇷',name:'Peso AR',sym:'$',rate:920,ppp:.16,g:'am'},
+  PLN:{flag:'🇵🇱',name:'Złoty',sym:'zł',rate:4.05,ppp:.78,g:'eu'},
+  CZK:{flag:'🇨🇿',name:'Koruna',sym:'Kč',rate:23.2,ppp:.73,g:'eu'},
+  HUF:{flag:'🇭🇺',name:'Forint',sym:'Ft',rate:363,ppp:.72,g:'eu'},
+  SEK:{flag:'🇸🇪',name:'Krona',sym:'kr',rate:10.5,ppp:.88,g:'eu'},
+  NOK:{flag:'🇳🇴',name:'Krone',sym:'kr',rate:10.6,ppp:.93,g:'eu'},
+  CHF:{flag:'🇨🇭',name:'Franc',sym:'CHF',rate:.89,ppp:1.05,g:'eu'},
+  AUD:{flag:'🇦🇺',name:'AUD',sym:'A$',rate:1.54,ppp:.85,g:'oth'},
+  CAD:{flag:'🇨🇦',name:'CAD',sym:'C$',rate:1.37,ppp:.88,g:'am'},
+  SGD:{flag:'🇸🇬',name:'SGD',sym:'S$',rate:1.35,ppp:.93,g:'asia'},
+  HKD:{flag:'🇭🇰',name:'HKD',sym:'HK$',rate:7.82,ppp:.88,g:'asia'},
+  TWD:{flag:'🇹🇼',name:'TWD',sym:'NT$',rate:31.7,ppp:.67,g:'asia'},
+  THB:{flag:'🇹🇭',name:'Baht',sym:'฿',rate:35.3,ppp:.48,g:'asia'},
+  IDR:{flag:'🇮🇩',name:'Rupiah',sym:'Rp',rate:15800,ppp:.38,g:'asia'},
+  MYR:{flag:'🇲🇾',name:'Ringgit',sym:'RM',rate:4.72,ppp:.52,g:'asia'},
+  PHP:{flag:'🇵🇭',name:'Peso PH',sym:'₱',rate:56.5,ppp:.42,g:'asia'},
+  VND:{flag:'🇻🇳',name:'Dong',sym:'₫',rate:24600,ppp:.33,g:'asia'},
+  GEL:{flag:'🇬🇪',name:'Lari',sym:'₾',rate:2.68,ppp:.44,g:'cis'},
+  AMD:{flag:'🇦🇲',name:'Dram',sym:'֏',rate:397,ppp:.38,g:'cis'},
+  AZN:{flag:'🇦🇿',name:'Manat',sym:'₼',rate:1.70,ppp:.42,g:'cis'},
+  BYN:{flag:'🇧🇾',name:'Ruble BY',sym:'Br',rate:3.27,ppp:.37,g:'cis'},
+  UZS:{flag:'🇺🇿',name:'Sum',sym:'сум',rate:12700,ppp:.28,g:'cis'},
+  KGS:{flag:'🇰🇬',name:'Som',sym:'с',rate:89.5,ppp:.28,g:'cis'},
+  SAR:{flag:'🇸🇦',name:'Riyal',sym:'SR',rate:3.75,ppp:.73,g:'me'},
+  AED:{flag:'🇦🇪',name:'Dirham',sym:'AED',rate:3.67,ppp:.78,g:'me'},
+  ILS:{flag:'🇮🇱',name:'Shekel',sym:'₪',rate:3.62,ppp:.82,g:'me'},
+  EGP:{flag:'🇪🇬',name:'Pound EG',sym:'E£',rate:48.5,ppp:.28,g:'me'},
+  ZAR:{flag:'🇿🇦',name:'Rand',sym:'R',rate:18.8,ppp:.43,g:'oth'},
+  NZD:{flag:'🇳🇿',name:'NZD',sym:'NZ$',rate:1.64,ppp:.83,g:'oth'},
+  NGN:{flag:'🇳🇬',name:'Naira',sym:'₦',rate:1520,ppp:.28,g:'oth'},
+  MAD:{flag:'🇲🇦',name:'Dirham MA',sym:'MAD',rate:9.95,ppp:.38,g:'oth'},
+};
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let S={lang:'ru',theme:'lime',cur:'USD',view:'list',wp:'nebula',
+       showPPP:true,hideBought:false,metaOnly:false,cardSize:'list'};
+let cart=[], purchased=[];
+let allDeals=[],freeDeals=[],filteredDeals=[];
+let filters={disc:0,price:9999,sort:'savings'};
+let sfFilters={disc:0,price:60,meta:0,rating:0};
+let searchQuery='', activeTag='';
+let renderOffset=0;
+const BATCH=30, PAGES=17;
+let cdInterval=null,cdSec=300;
+let heroGame=null,cartTab='cart';
+let wpAnim=null;
+
+// ══════════════════════════════════════════════
+// SETTINGS — LOAD / SAVE
+// ══════════════════════════════════════════════
+function loadAll(){
+  try{
+    const sv=JSON.parse(localStorage.getItem('ds_settings')||'{}');
+    Object.assign(S,sv);
+    cart=JSON.parse(localStorage.getItem('ds_cart')||'[]');
+    purchased=JSON.parse(localStorage.getItem('ds_purchased')||'[]');
+  }catch(e){}
+}
+function saveSettings(){ try{localStorage.setItem('ds_settings',JSON.stringify(S));}catch(e){} }
+function saveCart(){ try{localStorage.setItem('ds_cart',JSON.stringify(cart));}catch(e){} }
+function savePurchased(){ try{localStorage.setItem('ds_purchased',JSON.stringify(purchased));}catch(e){} }
+function saveSetting(key,val){ S[key]=val; saveSettings(); }
+
+// ══════════════════════════════════════════════
+// LANGUAGE AUTO-DETECT
+// ══════════════════════════════════════════════
+function detectLang(){
+  const nav=navigator.language||'en';
+  const lc=nav.toLowerCase();
+  if(lc.startsWith('ru')) return 'ru';
+  if(lc.startsWith('kk')||lc.startsWith('kz')) return 'kz';
+  if(lc.startsWith('zh')) return 'zh';
+  if(lc.startsWith('de')) return 'de';
+  if(lc.startsWith('tr')) return 'tr';
+  if(lc.startsWith('ja')) return 'ja';
+  if(lc.startsWith('ko')) return 'ko';
+  return 'en';
+}
+
+// ══════════════════════════════════════════════
+// APPLY THEME
+// ══════════════════════════════════════════════
+function applyTheme(id,save=true){
+  const t=THEMES[id]; if(!t) return;
+  S.theme=id;
+  const r=document.documentElement;
+  r.style.setProperty('--acc',t.acc);
+  r.style.setProperty('--accR',t.r);
+  r.style.setProperty('--accG',t.g);
+  r.style.setProperty('--accB',t.b);
+  let st=document.getElementById('th-kf');
+  if(!st){st=document.createElement('style');st.id='th-kf';document.head.appendChild(st);}
+  st.textContent=`@keyframes lpulse{0%,100%{box-shadow:0 0 0 0 rgba(${t.r},${t.g},${t.b},.4)}50%{box-shadow:0 0 0 8px rgba(${t.r},${t.g},${t.b},0)}}
+  @keyframes hex-glow{0%,100%{box-shadow:0 0 20px rgba(${t.r},${t.g},${t.b},.2),inset 0 0 20px rgba(${t.r},${t.g},${t.b},.05)}50%{box-shadow:0 0 40px rgba(${t.r},${t.g},${t.b},.4),inset 0 0 30px rgba(${t.r},${t.g},${t.b},.12)}}`;
+  if(save){saveSettings();buildThemeGrid();}
+}
+
+// ══════════════════════════════════════════════
+// APPLY LANGUAGE
+// ══════════════════════════════════════════════
+function applyLang(id,save=true){
+  const L=LANGS[id]; if(!L) return;
+  S.lang=id;
+  document.documentElement.lang=id;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n,v=L[k];
+    if(v!==undefined&&typeof v==='string') el.textContent=v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.dataset.i18nPh,v=L[k];
+    if(v) el.placeholder=v;
+  });
+  updateCountdownLabel();
+  if(save){saveSettings();buildLangGrid();}
+  if(heroGame) renderGOD();
+}
+function t(k,...args){
+  const L=LANGS[S.lang]||LANGS.ru;
+  const v=L[k];
+  if(typeof v==='function') return v(...args);
+  return v||k;
+}
+
+// ══════════════════════════════════════════════
+// WALLPAPER
+// ══════════════════════════════════════════════
+function setWP(btn,id){
+  S.wp=id; saveSettings();
+  document.querySelectorAll('.wp-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  initWP();
+}
+function initWP(){
+  const canvas=document.getElementById('bg-canvas'),ctx=canvas.getContext('2d');
+  cancelAnimationFrame(wpAnim);
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const neb=document.getElementById('nebula');
+  if(S.wp==='none'){neb.style.display='none';canvas.style.display='none';return;}
+  neb.style.display=''; canvas.style.display='';
+  if(S.wp==='nebula'){runStarsWP(canvas,ctx,true);return;}
+  if(S.wp==='matrix'){runMatrixWP(canvas,ctx);neb.style.display='none';return;}
+  if(S.wp==='stars'){runStarsWP(canvas,ctx,false);neb.style.display='none';return;}
+}
+function runStarsWP(canvas,ctx,drift){
+  let W=canvas.width,H=canvas.height;
+  window.addEventListener('resize',()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight;});
+  const pts=Array.from({length:180},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,a:Math.random()*.5+.1,va:(Math.random()-.5)*.005,vx:drift?(Math.random()-.5)*.08:0,vy:drift?-Math.random()*.08:0}));
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.a+=p.va;if(p.a<.05||p.a>.65)p.va*=-1;
+      if(drift){p.x+=p.vx;p.y+=p.vy;if(p.y<-2)p.y=H+2;if(p.x<-2)p.x=W+2;if(p.x>W+2)p.x=-2;}
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(var(--accR,200),var(--accG,255),var(--accB,0),${p.a})`;
+      // use actual var values
+      const {r,g,b}=THEMES[S.theme]||THEMES.lime;
+      ctx.fillStyle=`rgba(${r},${g},${b},${p.a})`;
+      ctx.fill();
+    });
+    wpAnim=requestAnimationFrame(loop);
+  }
+  loop();
+}
+function runMatrixWP(canvas,ctx){
+  let W=canvas.width,H=canvas.height;
+  window.addEventListener('resize',()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight;drops.length=0;for(let i=0;i<Math.floor(W/14);i++)drops.push(Math.random()*H/14|0);});
+  const chars='アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF';
+  const drops=[];
+  for(let i=0;i<Math.floor(W/14);i++) drops.push(Math.random()*H/14|0);
+  function loop(){
+    ctx.fillStyle='rgba(6,6,15,.08)';ctx.fillRect(0,0,W,H);
+    const {r,g,b}=THEMES[S.theme]||THEMES.lime;
+    ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.font='12px monospace';
+    drops.forEach((y,i)=>{
+      ctx.fillText(chars[Math.random()*chars.length|0],i*14,y*14);
+      if(y*14>H&&Math.random()>.975) drops[i]=0;
+      drops[i]++;
+    });
+    wpAnim=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ══════════════════════════════════════════════
+// VIEW MODE
+// ══════════════════════════════════════════════
+function setViewMode(mode){
+  S.view=mode; saveSettings();
+  document.getElementById('deals-list').style.display=mode==='list'?'flex':'none';
+  document.getElementById('deals-grid').style.display=mode==='grid'?'grid':'none';
+  document.getElementById('vt-list').classList.toggle('on',mode==='list');
+  document.getElementById('vt-grid').classList.toggle('on',mode==='grid');
+  renderOffset=0;
+  document.getElementById('deals-list').innerHTML='';
+  document.getElementById('deals-grid').innerHTML='';
+  renderNextBatch();
+}
+function setSz(btn,id){
+  S.cardSize=id; S.view=id==='list'?'list':'grid'; saveSettings();
+  document.querySelectorAll('.size-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const cols={'grid-sm':'repeat(auto-fill,minmax(200px,1fr))','grid-md':'repeat(auto-fill,minmax(280px,1fr))','grid-lg':'repeat(auto-fill,minmax(360px,1fr))'};
+  if(id!=='list') document.documentElement.style.setProperty('--card-cols',cols[id]||cols['grid-md']);
+  setViewMode(S.view);
+}
+
+// ══════════════════════════════════════════════
+// CURRENCY
+// ══════════════════════════════════════════════
+function setCur(code){
+  S.cur=code; saveSettings();
+  const c=CURRENCIES[code];
+  document.getElementById('cur-hdr-flag').textContent=c.flag;
+  buildCurGrid();
+  renderOffset=0;
+  document.getElementById('deals-list').innerHTML='';
+  document.getElementById('deals-grid').innerHTML='';
+  applyFilters(true);
+  if(heroGame) renderGOD();
+  renderCartBody();
+  showNotif(`${c.flag} ${code}`);
+}
+function convertP(usd){const c=CURRENCIES[S.cur];return usd*c.ppp*c.rate;}
+function fmtP(val){
+  const c=CURRENCIES[S.cur],a=Math.abs(val);
+  let s=a>=1000?Math.round(val).toLocaleString('ru-RU'):a<10?val.toFixed(2):Math.round(val).toString();
+  return c.sym+s;
+}
+function pppNote(){
+  const f=CURRENCIES[S.cur].ppp;
+  if(f<0.5) return t('cheaper',(1/f).toFixed(1));
+  if(f<0.85) return t('cheaper',(1/f).toFixed(1));
+  if(f<=1.02) return t('same');
+  return t('pricier',Math.round((f-1)*100));
+}
+
+// ══════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════
+function setProgress(v){const b=document.getElementById('pbar');b.style.width=v+'%';b.style.opacity=v>=100?0:1;}
+
+// ══════════════════════════════════════════════
+// FETCH
+// ══════════════════════════════════════════════
+async function startFetch(manual=false){
+  const ico=document.getElementById('rIcon'),btn=document.getElementById('refreshBtn');
+  ico.classList.add('spin');btn.disabled=true;
+  allDeals=[];freeDeals=[];filteredDeals=[];heroGame=null;renderOffset=0;
+  document.getElementById('deals-list').innerHTML='';
+  document.getElementById('deals-grid').innerHTML='';
+  document.getElementById('free-strip').innerHTML='';
+  document.getElementById('load-more-wrap').style.display='none';
+  setProgress(3);
+
+  // skeletons
+  const sk=Array(12).fill('<div class="sk sk-row"></div>').join('');
+  document.getElementById('deals-list').innerHTML=sk;
+
+  // free games fetch
+  fetchFreeDeals();
+
+  const base='https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=60&sortBy=Savings&metacritic=60';
+  try{
+    for(let p=0;p<PAGES;p++){
+      const res=await fetch(`${base}&pageNumber=${p}`);
+      if(!res.ok) break;
+      const raw=await res.json();
+      if(!raw?.length) break;
+      const batch=raw.filter(d=>parseFloat(d.savings)>=20&&parseFloat(d.salePrice)>0).map(d=>({
+        id:d.gameID,appId:d.steamAppID,title:d.title,thumb:d.thumb,
+        sale:parseFloat(d.salePrice),normal:parseFloat(d.normalPrice),
+        savings:Math.round(parseFloat(d.savings)),
+        meta:parseInt(d.metacriticScore)||0,rPct:parseInt(d.steamRatingPercent)||0,
+        rTxt:d.steamRatingText||'',dealID:d.dealID,
+      }));
+      allDeals.push(...batch);
+      setProgress(Math.round(((p+1)/PAGES)*88)+3);
+      if(p===0){
+        document.getElementById('deals-list').innerHTML='';
+        document.getElementById('deals-grid').innerHTML='';
+        updateGOD();updateStats();applyFilters(true);
+      } else {updateStats();applyFilters(false);}
+    }
+  }finally{
+    setProgress(100);ico.classList.remove('spin');btn.disabled=false;
+    updateStats();applyFilters(false);
+    document.getElementById('upd-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(manual) showNotif('✓ '+t('updated')+' · '+allDeals.length+' '+t('shown'));
+    startCountdown();
+  }
+}
+
+async function fetchFreeDeals(){
+  freeDeals=[];
+  try{
+    const pages=await Promise.all([0,1,2].map(p=>
+      fetch(`https://www.cheapshark.com/api/1.0/deals?storeID=1&upperPrice=0&pageSize=60&pageNumber=${p}`)
+        .then(r=>r.ok?r.json():[]).catch(()=>[])));
+    const seen=new Set();
+    freeDeals=pages.flat().filter(d=>{
+      if(seen.has(d.gameID)) return false;
+      seen.add(d.gameID);
+      return parseFloat(d.salePrice)===0&&parseFloat(d.normalPrice)>0;
+    }).map(d=>({
+      id:d.gameID,appId:d.steamAppID,title:d.title,thumb:d.thumb,
+      sale:0,normal:parseFloat(d.normalPrice),savings:100,
+      meta:parseInt(d.metacriticScore)||0,rPct:parseInt(d.steamRatingPercent)||0,
+      rTxt:d.steamRatingText||'',dealID:d.dealID,
+    })).sort((a,b)=>b.meta-a.meta||b.rPct-a.rPct);
+  }catch(e){}
+  renderFreeStrip();
+  updateStats();
+}
+
+// ══════════════════════════════════════════════
+// GAME OF DAY
+// ══════════════════════════════════════════════
+function updateGOD(){
+  if(!allDeals.length) return;
+  const c=allDeals.filter(d=>d.savings>=40&&(d.meta>=75||d.rPct>=85));
+  if(!c.length) return;
+  heroGame=c.reduce((b,d)=>{const s=d.meta*2+d.savings+d.rPct*.5;return s>b.meta*2+b.savings+b.rPct*.5?d:b;},c[0]);
+  renderGOD();
+}
+function renderGOD(){
+  const d=heroGame; if(!d) return;
+  const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/library_hero.jpg`:'';
+  const fallback=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:'';
+  const gImg=document.getElementById('god-img');
+  if(img){const i=new Image();i.onload=()=>gImg.src=img;i.onerror=()=>gImg.src=fallback;i.src=img;}
+  gImg.alt=d.title;
+  document.getElementById('god-title').textContent=d.title;
+  let m='';
+  if(d.meta>0) m+=`<span class="pill ${d.meta>=75?'pill-meta-g':d.meta>=60?'pill-meta-y':'pill-meta-r'}">${d.meta} MC</span>`;
+  if(d.rPct>0) m+=`<span class="pill ${d.rPct>=80?'pill-rating-h':d.rPct>=60?'pill-rating-m':'pill-rating-l'}">${d.rPct}%</span>`;
+  document.getElementById('god-meta').innerHTML=m;
+  const cs=convertP(d.sale),cn=convertP(d.normal);
+  document.getElementById('god-prices').innerHTML=
+    `<span class="gp-badge">-${d.savings}%</span><span class="gp-sale">${fmtP(cs)}</span><span class="gp-orig">${fmtP(cn)}</span>`;
+  const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+  document.getElementById('god-link').href=link;
+  const cartBtn=document.getElementById('god-cart-btn');
+  const inCart=cart.some(x=>x.id===d.id);
+  cartBtn.innerHTML=`🛒 <span>${inCart?t('inCart'):t('addCart')}</span>`;
+  cartBtn.onclick=()=>{toggleCart_item(d);renderGOD();};
+}
+
+// ══════════════════════════════════════════════
+// FREE STRIP
+// ══════════════════════════════════════════════
+function renderFreeStrip(){
+  const strip=document.getElementById('free-strip');
+  const label=document.getElementById('free-count-label');
+  const sec=document.getElementById('free-section');
+  if(!freeDeals.length){sec.style.display='none';renderSidebarFree();return;}
+  sec.style.display='';
+  label.textContent=freeDeals.length+' '+t('shown');
+  strip.innerHTML=freeDeals.map((d,i)=>{
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    return `<div class="free-card" style="animation-delay:${i*50}ms" onclick="window.open('${link}','_blank')">
+      <img class="free-card-img" src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none'">
+      <div class="free-card-body">
+        <div class="free-card-name">${d.title}</div>
+        <div class="free-card-meta">${d.meta>0?'MC: '+d.meta:d.rPct>0?d.rPct+'%':''} · было ${fmtP(convertP(d.normal))}</div>
+        <a class="free-card-cta" href="${link}" target="_blank" onclick="event.stopPropagation()">⚡ ${t('getFree')}</a>
+      </div>
+    </div>`;
+  }).join('');
+  renderSidebarFree();
+}
+
+function renderSidebarFree(){
+  const sec=document.getElementById('sidebar-free');
+  const list=document.getElementById('sf-free-list');
+  const cnt=document.getElementById('sf-free-count');
+  if(!freeDeals.length){sec.style.display='none';return;}
+  sec.style.display='';
+  cnt.textContent=freeDeals.length+' игр';
+  list.innerHTML=freeDeals.slice(0,8).map(d=>{
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    return `<div class="sf-free-item" onclick="window.open('${link}','_blank')">
+      <img class="sf-free-img" src="${img}" alt="${d.title}" onerror="this.style.display='none'">
+      <div class="sf-free-info">
+        <div class="sf-free-name">${d.title}</div>
+        <div class="sf-free-meta">${d.meta>0?'MC '+d.meta+' · ':''}было ${fmtP(convertP(d.normal))}</div>
+      </div>
+      <a class="sf-free-btn" href="${link}" target="_blank" onclick="event.stopPropagation()">Free</a>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════
+function updateStats(){
+  document.getElementById('s-total').textContent=[...allDeals,...freeDeals].length||'—';
+  document.getElementById('s-free').textContent=freeDeals.length||'—';
+  document.getElementById('s-maxd').textContent=allDeals.length?Math.max(...allDeals.map(d=>d.savings))+'%':'—';
+  const avg=allDeals.length?Math.round(allDeals.reduce((s,d)=>s+d.savings,0)/allDeals.length):0;
+  document.getElementById('s-avgd').textContent=avg?avg+'%':'—';
+  document.getElementById('s-cart').textContent=cart.length;
+}
+
+// ══════════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════════
+function setF(type,btn){
+  filters[type]=isNaN(+btn.dataset.v)?btn.dataset.v:+btn.dataset.v;
+  document.querySelectorAll(`[data-f="${type}"]`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderOffset=0;applyFilters(true);
+}
+function setSortBy(v){filters.sort=v;renderOffset=0;applyFilters(true);}
+function onSearch(v){
+  searchQuery=v.toLowerCase();
+  // sync both search inputs
+  document.getElementById('hero-search').value=v;
+  const hsi=document.getElementById('hdr-search-input');
+  if(hsi) hsi.value=v;
+  renderOffset=0;applyFilters(true);
+}
+function setTag(btn,tag){
+  activeTag=tag;
+  document.querySelectorAll('.htag').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOffset=0;applyFilters(true);
+}
+function updateRangeDisc(el){
+  sfFilters.disc=+el.value;
+  const pct=(+el.value/+el.max)*100;
+  el.style.background=`linear-gradient(90deg,var(--acc) 0%,var(--acc) ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+  document.getElementById('sf-disc-val').textContent=el.value>0?el.value+'%+':'Все';
+}
+function updateRangePrice(el){
+  sfFilters.price=+el.value;
+  const pct=(+el.value/+el.max)*100;
+  el.style.background=`linear-gradient(90deg,var(--acc) 0%,var(--acc) ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+  document.getElementById('sf-price-val').textContent=+el.value>=60?t('any'):'$'+el.value;
+}
+function updateRangeMeta(el){
+  sfFilters.meta=+el.value;
+  const pct=(+el.value/+el.max)*100;
+  el.style.background=`linear-gradient(90deg,var(--acc) 0%,var(--acc) ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+  document.getElementById('sf-meta-val').textContent=+el.value>0?el.value:t('any');
+}
+function initRangeVisuals(){
+  ['sf-disc','sf-price','sf-meta'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const pct=(+el.value/+el.max)*100;
+    el.style.background=`linear-gradient(90deg,var(--acc) 0%,var(--acc) ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+  });
+}
+function setSfRating(btn,v){
+  sfFilters.rating=v;
+  document.querySelectorAll('[data-sfr]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');applyFilters(true);
+}
+function resetSidebarFilters(){
+  sfFilters={disc:0,price:60,meta:0,rating:0};
+  document.getElementById('sf-disc').value=0;updateRangeDisc(document.getElementById('sf-disc'));
+  document.getElementById('sf-price').value=60;updateRangePrice(document.getElementById('sf-price'));
+  document.getElementById('sf-meta').value=0;updateRangeMeta(document.getElementById('sf-meta'));
+  document.querySelectorAll('[data-sfr]').forEach(b=>b.classList.remove('on'));
+  document.querySelector('[data-sfr="0"]').classList.add('on');
+  document.getElementById('sf-big-disc').checked=false;
+  document.getElementById('sf-has-mc').checked=false;
+  applyFilters(true);
+}
+
+function applyFilters(render=true){
+  const hideBought=document.getElementById('tog-hide-bought')?.checked;
+  const metaOnly=document.getElementById('tog-meta-only')?.checked;
+  const bigDisc=document.getElementById('sf-big-disc')?.checked;
+  const hasMC=document.getElementById('sf-has-mc')?.checked;
+
+  let res=allDeals.filter(d=>{
+    if(d.savings<filters.disc) return false;
+    if(filters.price<9999&&d.sale>filters.price) return false;
+    if(d.savings<sfFilters.disc) return false;
+    if(sfFilters.price<60&&d.sale>sfFilters.price) return false;
+    if(sfFilters.meta>0&&d.meta<sfFilters.meta) return false;
+    if(sfFilters.rating>0&&d.rPct<sfFilters.rating) return false;
+    if(bigDisc&&d.savings<50) return false;
+    if(hasMC&&!d.meta) return false;
+    if(metaOnly&&!d.meta) return false;
+    if(searchQuery&&!d.title.toLowerCase().includes(searchQuery)) return false;
+    if(activeTag==='70'&&d.savings<70) return false;
+    if(activeTag==='90'&&d.savings<90) return false;
+    if(activeTag==='meta'&&d.meta<80) return false;
+    if(activeTag==='cheap'&&d.sale>5) return false;
+    if(hideBought&&purchased.includes(d.id)) return false;
+    return true;
+  });
+
+  if(filters.sort==='savings') res.sort((a,b)=>b.savings-a.savings);
+  else if(filters.sort==='price') res.sort((a,b)=>a.sale-b.sale);
+  else if(filters.sort==='meta') res.sort((a,b)=>b.meta-a.meta);
+  else if(filters.sort==='rating') res.sort((a,b)=>b.rPct-a.rPct);
+  else if(filters.sort==='name') res.sort((a,b)=>a.title.localeCompare(b.title));
+
+  filteredDeals=res;
+  document.getElementById('shown-count').textContent=res.length;
+  if(render){
+    renderOffset=0;
+    document.getElementById('deals-list').innerHTML='';
+    document.getElementById('deals-grid').innerHTML='';
+    renderNextBatch();
+  }
+}
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+function renderNextBatch(){
+  const slice=filteredDeals.slice(renderOffset,renderOffset+BATCH);
+  renderOffset+=BATCH;
+  const showPPP=S.showPPP&&CURRENCIES[S.cur].ppp<0.88;
+
+  if(S.view==='list'){
+    const list=document.getElementById('deals-list');
+    slice.forEach((d,i)=>{
+      const el=document.createElement('div');
+      el.className='deal-row'+(purchased.includes(d.id)?' purchased':'');
+      el.style.animationDelay=(i*25)+'ms';
+      el.innerHTML=buildRow(d,showPPP,i);
+      el.onclick=(e)=>{if(e.target.closest('.btn-cart,.btn-buy')) return;
+        window.open(d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`,'_blank');};
+      list.appendChild(el);
+    });
+  } else {
+    const grid=document.getElementById('deals-grid');
+    slice.forEach((d,i)=>{
+      const el=document.createElement('div');
+      el.className='gcard'+(purchased.includes(d.id)?' purchased':'');
+      el.style.animationDelay=(i*22)+'ms';
+      el.innerHTML=buildCard(d,showPPP);
+      el.onclick=(e)=>{if(e.target.closest('.btn-cart,.btn-buy,.gcard-actions')) return;
+        window.open(d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`,'_blank');};
+      grid.appendChild(el);
+    });
+  }
+
+  document.getElementById('load-more-wrap').style.display=renderOffset<filteredDeals.length?'block':'none';
+}
+
+function buildRow(d,showPPP){
+  const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+  const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+  const mcCls=d.meta>=75?'pill-meta-g':d.meta>=60?'pill-meta-y':d.meta>0?'pill-meta-r':'pill-meta-n';
+  const rtCls=d.rPct>=80?'pill-rating-h':d.rPct>=60?'pill-rating-m':d.rPct>0?'pill-rating-l':'pill-rating-n';
+  const cs=convertP(d.sale),cn=convertP(d.normal),csave=cn-cs;
+  const inCart=cart.some(x=>x.id===d.id);
+  const isPurch=purchased.includes(d.id);
+  return `
+    <div class="row-img">
+      <img src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="row-img-fb">🎮</div>
+      <span class="row-disc">-${d.savings}%</span>
+    </div>
+    <div class="row-info">
+      <div class="row-title">${d.title}</div>
+      <div class="row-pills">
+        ${d.meta>0?`<span class="pill ${mcCls}">${d.meta}</span>`:''}
+        ${d.rPct>0?`<span class="pill ${rtCls}">${d.rPct}%</span>`:''}
+      </div>
+      ${showPPP?`<div class="row-tags-text">${pppNote()}</div>`:''}
+    </div>
+    <div class="row-price">
+      <span class="row-price-now">${fmtP(cs)}</span>
+      <span class="row-price-was">${fmtP(cn)}</span>
+      <span class="row-price-save">-${fmtP(csave)}</span>
+    </div>
+    <div class="row-actions">
+      <button class="btn-cart ${inCart?'btn-cart-added':'btn-cart-add'}" onclick="toggleCart_item(${JSON.stringify(d).replace(/"/g,'&quot;')})">
+        ${inCart?'✓ '+t('inCart'):'+ '+t('addCart')}
+      </button>
+      <a class="btn-buy" href="${link}" target="_blank" onclick="if(!${isPurch}){markBought('${d.id}')}">
+        ${isPurch?t('markBought'):t('buyNow')}
+      </a>
+    </div>`;
+}
+
+function buildCard(d,showPPP){
+  const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+  const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+  const mcCls=d.meta>=75?'mb-g':d.meta>=60?'mb-y':d.meta>0?'mb-r':'mb-n';
+  const rtCls=d.rPct>=80?'pill-rating-h':d.rPct>=60?'pill-rating-m':d.rPct>0?'pill-rating-l':'pill-rating-n';
+  const cs=convertP(d.sale),cn=convertP(d.normal),csave=cn-cs;
+  const inCart=cart.some(x=>x.id===d.id);
+  const isPurch=purchased.includes(d.id);
+  return `
+    <div class="gcard-img">
+      <img src="${img}" alt="${d.title}" loading="lazy" onerror="this.style.display='none'">
+      <div class="gcard-img-ov"></div>
+      <span class="gcard-disc">-${d.savings}%</span>
+      <span class="gcard-meta ${mcCls}">${d.meta>0?d.meta:'?'}</span>
+    </div>
+    <div class="gcard-body">
+      <div class="gcard-title">${d.title}</div>
+      <div class="gcard-pills">
+        ${d.rPct>0?`<span class="pill ${rtCls}">${d.rPct}%</span>`:''}
+        ${showPPP?`<span style="font-size:10px;color:var(--cyan);opacity:.8">${pppNote()}</span>`:''}
+      </div>
+      <div class="gcard-price">
+        <span class="gc-now">${fmtP(cs)}</span>
+        <span class="gc-was">${fmtP(cn)}</span>
+        <span class="gc-save">-${fmtP(csave)}</span>
+      </div>
+      <div class="gcard-actions">
+        <button class="btn-cart ${inCart?'btn-cart-added':'btn-cart-add'}" onclick="toggleCart_item(${JSON.stringify(d).replace(/"/g,'&quot;')})">
+          ${inCart?'✓':'+'}
+        </button>
+        <a class="btn-buy" href="${link}" target="_blank" onclick="if(!${isPurch}){markBought('${d.id}')}">
+          ${isPurch?'✓':t('buyNow')}
+        </a>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// CART
+// ══════════════════════════════════════════════
+function toggleCart_item(d){
+  const id=typeof d==='string'?d:d.id;
+  const idx=cart.findIndex(x=>x.id===id);
+  if(idx>=0){
+    cart.splice(idx,1);
+  } else {
+    const deal=typeof d==='object'?d:allDeals.find(x=>x.id===id);
+    if(deal) cart.push(deal);
+  }
+  saveCart();
+  updateCartBadge();
+  updateStats();
+  renderCartBody();
+  // refresh visible buttons
+  document.getElementById('deals-list').innerHTML='';
+  document.getElementById('deals-grid').innerHTML='';
+  renderNextBatch();
+  if(heroGame) renderGOD();
+}
+
+function markBought(id){
+  if(!purchased.includes(id)) purchased.push(id);
+  savePurchased();
+  // remove from cart
+  const idx=cart.findIndex(x=>x.id===id);
+  if(idx>=0) cart.splice(idx,1);
+  saveCart();
+  updateCartBadge();
+  updateStats();
+  renderCartBody();
+  showNotif('✓ '+t('markBought'));
+}
+
+function unmarkBought(id){
+  purchased=purchased.filter(x=>x!==id);
+  savePurchased();renderCartBody();
+}
+
+function updateCartBadge(){
+  const b=document.getElementById('cart-badge');
+  b.textContent=cart.length;
+  b.classList.toggle('show',cart.length>0);
+  document.getElementById('s-cart').textContent=cart.length;
+}
+
+function setCartTab(tab){
+  cartTab=tab;
+  document.getElementById('tab-cart').classList.toggle('on',tab==='cart');
+  document.getElementById('tab-bought').classList.toggle('on',tab==='bought');
+  renderCartBody();
+}
+
+function renderCartBody(){
+  const body=document.getElementById('cart-body');
+  const footer=document.getElementById('cart-footer');
+  const items=cartTab==='cart'?cart:purchased.map(id=>[...allDeals,...freeDeals].find(d=>d.id===id)).filter(Boolean);
+
+  if(!items.length){
+    body.innerHTML=`<div class="cart-empty"><span class="ce-icon">${cartTab==='cart'?'🛒':'✅'}</span><h3>${cartTab==='cart'?t('cartEmpty'):t('boughtTitle')}</h3></div>`;
+    footer.innerHTML=''; return;
+  }
+
+  body.innerHTML=items.map(d=>{
+    if(!d) return '';
+    const img=d.appId?`https://cdn.akamai.steamstatic.com/steam/apps/${d.appId}/header.jpg`:d.thumb;
+    const link=d.appId?`https://store.steampowered.com/app/${d.appId}`:`https://www.cheapshark.com/redirect?dealID=${d.dealID}`;
+    const isPurch=purchased.includes(d.id);
+    return `<div class="cart-item">
+      <img class="cart-item-img" src="${img}" alt="${d.title}" onerror="this.style.display='none'">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${d.title}</div>
+        <div class="cart-item-price">${fmtP(convertP(d.sale))}</div>
+        <div class="cart-item-disc">-${d.savings}% · было ${fmtP(convertP(d.normal))}</div>
+      </div>
+      <div class="cart-item-actions">
+        ${cartTab==='cart'
+          ?`<a class="cart-item-buy${isPurch?' purchased':''}" href="${link}" target="_blank" onclick="if(!${isPurch})markBought('${d.id}')">${isPurch?t('markBought'):t('buyNow')}</a>
+            <button class="cart-item-del" onclick="toggleCart_item('${d.id}')">✕</button>`
+          :`<button class="cart-item-del" style="color:var(--txt2)" onclick="unmarkBought('${d.id}')">↩ Вернуть</button>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  if(cartTab==='cart'&&cart.length>0){
+    const total=cart.reduce((s,d)=>s+convertP(d.sale),0);
+    footer.innerHTML=`<div class="cart-total"><span class="cart-total-label">Итого</span><span class="cart-total-val">${fmtP(total)}</span></div>
+      <button class="cart-buy-all" onclick="cart.forEach(d=>window.open(d.appId?'https://store.steampowered.com/app/'+d.appId:'https://www.cheapshark.com/redirect?dealID='+d.dealID,'_blank'))">🛒 Открыть все в Steam</button>`;
+  } else { footer.innerHTML=''; }
+}
+
+function toggleCart(){
+  const p=document.getElementById('cart-panel'),o=document.getElementById('cart-overlay');
+  const open=p.classList.contains('open');
+  if(open){closeCart();} else {p.classList.add('open');o.classList.add('open');renderCartBody();}
+}
+function closeCart(){
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('cart-overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS MODAL
+// ══════════════════════════════════════════════
+function toggleSettings(){
+  const m=document.getElementById('set-modal'),o=document.getElementById('set-overlay');
+  const open=m.classList.contains('open');
+  if(open){closeSettings();} else {
+    m.classList.add('open');o.classList.add('open');
+    buildLangGrid();buildThemeGrid();buildCurGrid();syncSettingsUI();
+  }
+}
+function closeSettings(){
+  document.getElementById('set-modal').classList.remove('open');
+  document.getElementById('set-overlay').classList.remove('open');
+}
+function syncSettingsUI(){
+  document.getElementById('tog-ppp').checked=S.showPPP;
+  document.getElementById('tog-hide-bought').checked=S.hideBought;
+  document.getElementById('tog-meta-only').checked=S.metaOnly;
+  document.querySelectorAll('.wp-opt').forEach(b=>b.classList.toggle('active',b.dataset.wp===S.wp));
+  document.querySelectorAll('.size-opt').forEach(b=>b.classList.toggle('active',b.dataset.sz===S.cardSize));
+  document.getElementById('cur-hdr-flag').textContent=CURRENCIES[S.cur].flag;
+}
+function buildLangGrid(){
+  document.getElementById('lang-grid').innerHTML=Object.entries(LANGS).map(([id,L])=>`
+    <div class="lang-item${id===S.lang?' active':''}" onclick="applyLang('${id}')">
+      <span class="lang-flag">${L.flag}</span>
+      <div class="lang-code">${L.code}</div>
+      <div class="lang-name">${L.name}</div>
+    </div>`).join('');
+}
+function buildThemeGrid(){
+  document.getElementById('theme-grid').innerHTML=Object.entries(THEMES).map(([id,th])=>`
+    <div class="theme-item${id===S.theme?' active':''}" onclick="applyTheme('${id}')"
+         style="${id===S.theme?`border-color:${th.acc};box-shadow:0 0 16px rgba(${th.r},${th.g},${th.b},.2)`:''}">
+      <div class="theme-swatch" style="background:linear-gradient(135deg,${th.acc},rgba(${th.r},${th.g},${th.b},.3));${id===S.theme?`box-shadow:0 0 16px rgba(${th.r},${th.g},${th.b},.4)`:''};"></div>
+      <div class="theme-name">${th.emoji} ${th.name}</div>
+    </div>`).join('');
+}
+function buildCurGrid(){
+  const search=(document.getElementById('cur-search')?.value||'').toLowerCase();
+  const entries=Object.entries(CURRENCIES).filter(([code,c])=>!search||code.toLowerCase().includes(search)||c.name.toLowerCase().includes(search));
+  document.getElementById('cur-grid').innerHTML=entries.map(([code,c])=>{
+    const f=c.ppp;
+    let fl,fc;
+    if(f<0.5){fl=`${(1/f).toFixed(1)}× дешевле`;fc='#4ade80';}
+    else if(f<0.85){fl=`-${Math.round((1-f)*100)}%`;fc='#4ade80';}
+    else if(f<=1.02){fl='= USD';fc='var(--muted)';}
+    else{fl=`+${Math.round((f-1)*100)}%`;fc='#f87171';}
+    return `<div class="cm-item${code===S.cur?' selected':''}" onclick="setCur('${code}')"
+      style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:1px solid ${code===S.cur?'rgba(var(--accR),var(--accG),var(--accB),.35)':'var(--bdr)'};background:${code===S.cur?'rgba(var(--accR),var(--accG),var(--accB),.08)':'rgba(255,255,255,.02)'};cursor:pointer;transition:all .18s;position:relative">
+      <span style="font-size:16px;flex-shrink:0">${c.flag}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--fm);font-size:11px;color:var(--acc)">${code}</div>
+        <div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:${fc};flex-shrink:0">${fl}</div>
+      ${code===S.cur?'<span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--acc)">✓</span>':''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// COUNTDOWN
+// ══════════════════════════════════════════════
+function updateCountdownLabel(){
+  const m=Math.floor(cdSec/60),s=cdSec%60;
+  document.getElementById('countdown').textContent=`${t('autoIn')} ${m}:${String(s).padStart(2,'0')}`;
+}
+function startCountdown(){
+  clearInterval(cdInterval);cdSec=300;
+  cdInterval=setInterval(()=>{cdSec--;updateCountdownLabel();if(cdSec<=0){clearInterval(cdInterval);startFetch(false);}},1000);
+}
+
+// ══════════════════════════════════════════════
+// CHANGELOG POPUP
+// ══════════════════════════════════════════════
+function toggleChangelog(btn){
+  const popup=document.getElementById('changelog-popup');
+  const isOpen=popup.classList.contains('open');
+  // Close on outside click
+  if(isOpen){popup.classList.remove('open');return;}
+  popup.classList.add('open');
+  const close=(e)=>{if(!btn.contains(e.target)){popup.classList.remove('open');document.removeEventListener('click',close);}};
+  setTimeout(()=>document.addEventListener('click',close),0);
+}
+
+// ══════════════════════════════════════════════
+// NOTIF / BTT
+// ══════════════════════════════════════════════
+function showNotif(msg){
+  const el=document.getElementById('notif');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+window.addEventListener('scroll',()=>document.getElementById('btt').classList.toggle('v',scrollY>600));
+window.addEventListener('resize',()=>{if(wpAnim) initWP();});
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+loadAll();
+// Auto-detect lang only if not set by user
+if(!localStorage.getItem('ds_settings')) S.lang=detectLang();
+applyTheme(S.theme,false);
+applyLang(S.lang,false);
+initWP();
+initRangeVisuals();
+updateCartBadge();
+document.getElementById('cur-hdr-flag').textContent=CURRENCIES[S.cur].flag;
+// Sync view mode
+setViewMode(S.view);
+startFetch(false);
+</script>
+
+</div>
+
+<!-- ─── INTRO SEQUENCE CONTROLLER ─── -->
+<script>
+(function(){
+  const TOPZI_DUR   = 7600;  // Topzi shows for this long (ms)
+  const KAI_DUR     = 9500;  // KAI shows for this long after fully visible (ms)
+  const FADE_OUT    = 800;   // fade-out duration (ms)
+  const KAI_FADE_IN = 600;   // KAI fade-in duration (ms)
+  const KAI_PREROLL = 200;   // invisible preroll before KAI fades in (ms)
+
+  const topziWrap = document.getElementById('topzi-wrap');
+  const kaiWrap   = document.getElementById('kai-wrap');
+  const mainSite  = document.getElementById('main-site');
+  const skipBtn   = document.getElementById('intro-skip');
+
+  // Snapshot KAI inner HTML now (before any mutations)
+  const kaiSnapshot = kaiWrap.innerHTML;
+
+  function showKAI() {
+    // 1. Fade out Topzi
+    topziWrap.style.transition = `opacity ${FADE_OUT}ms ease`;
+    topziWrap.style.opacity = '0';
+
+    setTimeout(() => {
+      topziWrap.style.display = 'none';
+
+      // 2. Reset KAI: wipe and re-inject the original HTML so all
+      //    CSS @keyframes restart from t=0 with fresh elements
+      kaiWrap.style.transition = 'none';
+      kaiWrap.style.opacity    = '0';
+      kaiWrap.style.display    = 'flex';
+      kaiWrap.innerHTML        = kaiSnapshot; // fresh DOM = fresh animations
+
+      // Force a reflow so the browser registers the new elements before
+      // we re-enable the opacity transition
+      void kaiWrap.offsetHeight;
+
+      // 3. Short preroll (animations alive but invisible), then fade in
+      setTimeout(() => {
+        kaiWrap.style.transition = `opacity ${KAI_FADE_IN}ms ease`;
+        kaiWrap.style.opacity    = '1';
+
+        // 4. Init JS-driven parts relative to KAI appearance
+        if (typeof window.initKAI === 'function') window.initKAI();
+
+        // 5. Schedule transition to main site
+        setTimeout(showMain, KAI_DUR);
+      }, KAI_PREROLL);
+
+    }, FADE_OUT);
+  }
+
+  function showMain() {
+    kaiWrap.style.transition = `opacity ${FADE_OUT}ms ease`;
+    kaiWrap.style.opacity    = '0';
+    setTimeout(() => {
+      kaiWrap.style.display  = 'none';
+      skipBtn.style.display  = 'none';
+      mainSite.style.pointerEvents = '';
+      mainSite.style.opacity = '1';
+      if (typeof initWP === 'function') initWP();
+    }, FADE_OUT);
+  }
+
+  function skipToMain() {
+    clearTimeout(window._introTimer1);
+    topziWrap.style.display = 'none';
+    kaiWrap.style.display   = 'none';
+    skipBtn.style.display   = 'none';
+    mainSite.style.pointerEvents = '';
+    mainSite.style.opacity  = '1';
+    if (typeof initWP === 'function') initWP();
+  }
+  window.skipToMain = skipToMain;
+
+  window._introTimer1 = setTimeout(showKAI, TOPZI_DUR);
+})();
+</script>
+
+<!-- Topzi JS -->
+<script>
+
+// ─── MATRIX RAIN BG ───────────────────────────────────
+(function(){
+  const c = document.getElementById('topzi-bg');
+  const ctx = c.getContext('2d');
+  let W, H;
+  const resize = () => { W = c.width = innerWidth; H = c.height = innerHeight; };
+  resize(); window.addEventListener('resize', resize);
+
+  const chars = 'アイウエオカキクケコサシスセソタチツテト01234567890ABCDEFabcdef<>{}[]|/\\#@$%&*+-=';
+  const cols = [];
+  let lastTime = 0;
+
+  function init() {
+    const colW = 16;
+    const numCols = Math.floor(W / colW);
+    cols.length = 0;
+    for (let i = 0; i < numCols; i++) {
+      cols.push({ x: i * colW, y: Math.random() * -H, speed: .4 + Math.random() * .6, opacity: .2 + Math.random() * .3 });
+    }
+  }
+  init(); window.addEventListener('resize', init);
+
+  function loop(ts) {
+    if (ts - lastTime < 40) { requestAnimationFrame(loop); return; }
+    lastTime = ts;
+
+    ctx.fillStyle = 'rgba(3,3,13,.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    cols.forEach(col => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const gradient = ctx.createLinearGradient(col.x, col.y - 60, col.x, col.y);
+      gradient.addColorStop(0, 'transparent');
+      gradient.addColorStop(.7, `rgba(0,180,220,${col.opacity * .4})`);
+      gradient.addColorStop(1, `rgba(0,229,255,${col.opacity})`);
+      ctx.font = '13px Share Tech Mono, monospace';
+      ctx.fillStyle = gradient;
+      ctx.fillText(char, col.x, col.y);
+      col.y += col.speed * 14;
+      if (col.y > H + 20) {
+        col.y = -20;
+        col.x = Math.floor(Math.random() * W / 16) * 16;
+      }
+    });
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+// ─── ASSEMBLE PARTICLES ───────────────────────────────
+(function(){
+  const c = document.getElementById('topzi-assemble');
+  const ctx = c.getContext('2d');
+  const W = window.innerWidth, H = window.innerHeight;
+  c.width = W; c.height = H;
+  c.style.width = W+'px'; c.style.height = H+'px';
+
+  // Get T-letter bounding box after fonts loaded
+  // We'll render the T shape ourselves onto an offscreen canvas
+  const offscreen = document.createElement('canvas');
+  offscreen.width = 300; offscreen.height = 260;
+  const octx = offscreen.getContext('2d');
+
+  const FONT_SIZE = 200;
+  octx.font = `900 ${FONT_SIZE}px Orbitron, sans-serif`;
+  octx.fillStyle = '#fff';
+  octx.fillText('T', 10, FONT_SIZE);
+
+  // Sample pixels from T
+  const imgData = octx.getImageData(0, 0, offscreen.width, offscreen.height);
+  const pts = [];
+  for (let y = 0; y < offscreen.height; y += 5) {
+    for (let x = 0; x < offscreen.width; x += 5) {
+      if (imgData.data[(y * offscreen.width + x) * 4 + 3] > 128) {
+        pts.push({ tx: x, ty: y });
+      }
+    }
+  }
+
+  // Center in viewport
+  const cx = W / 2 - 80, cy = H / 2 - 80;
+  const particles = pts.map(p => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    tx: p.tx + cx,
+    ty: p.ty + cy,
+    char: '01ABCDEFabcdef#@$%'.split('')[Math.floor(Math.random() * 18)],
+    color: Math.random() > .5 ? '#00e5ff' : '#38bdf8',
+    size: 9 + Math.random() * 5,
+    speed: .04 + Math.random() * .06,
+    opacity: 0,
+  }));
+
+  let phase = 'scatter'; // scatter -> assemble -> done
+  let startTime = null;
+  const SCATTER_DUR = 800;
+  const ASSEMBLE_DUR = 1400;
+  const START_DELAY = 600; // ms after page load
+
+  let animFrame;
+  function loop(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+
+    if (elapsed < START_DELAY) { animFrame = requestAnimationFrame(loop); return; }
+    const t = elapsed - START_DELAY;
+
+    ctx.clearRect(0, 0, W, H);
+
+    if (t < SCATTER_DUR + ASSEMBLE_DUR) {
+      ctx.font = `bold 10px Share Tech Mono, monospace`;
+      particles.forEach(p => {
+        const prog = Math.min(1, Math.max(0, (t - SCATTER_DUR) / ASSEMBLE_DUR));
+        const eased = prog < .5 ? 2*prog*prog : 1-Math.pow(-2*prog+2,2)/2;
+
+        p.x += (p.tx - p.x) * p.speed * (t > SCATTER_DUR ? 1 : 0);
+        p.y += (p.ty - p.y) * p.speed * (t > SCATTER_DUR ? 1 : 0);
+        p.opacity = Math.min(1, t / SCATTER_DUR * 2) * (1 - Math.max(0, prog - .8) / .2);
+
+        ctx.globalAlpha = p.opacity * .8;
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.char, p.x, p.y);
+      });
+      ctx.globalAlpha = 1;
+      animFrame = requestAnimationFrame(loop);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      c.style.opacity = '0';
+    }
+  }
+  requestAnimationFrame(loop);
+})();
+
+// ─── TAGLINE TYPEWRITER ───────────────────────────────
+(function(){
+  const el = document.getElementById('topzi-tagline-text');
+  const text = '> developer / gamer / creator';
+  let i = 0;
+  function type() {
+    if (i <= text.length) {
+      el.textContent = text.slice(0, i++);
+      setTimeout(type, 55 + Math.random() * 40);
+    }
+  }
+  setTimeout(type, 4500);
+})();
+
+// ─── HEX FLOATERS ─────────────────────────────────────
+(function(){
+  const container = document.getElementById('topzi-hexFloats');
+  const hexStrings = [
+    '0x54 0x4F 0x50','console.log("T")','#00e5ff','git commit','while(true)',
+    '0xFF','ssh topzi@','sudo -i','T0PZ1','npm run dev','{code: 200}',
+    'ping 127.0.0.1','<Topzi />','async/await','0b01010100',
+  ];
+  hexStrings.forEach((str, i) => {
+    const span = document.createElement('span');
+    span.textContent = str;
+    const angle = (i / hexStrings.length) * Math.PI * 2;
+    const r = 220 + Math.random() * 140;
+    const ex = Math.cos(angle) * r;
+    const ey = Math.sin(angle) * r;
+    const sx = Math.cos(angle) * (r - 30);
+    const sy = Math.sin(angle) * (r - 30);
+    span.style.cssText = `
+      --sx:${sx}px;--sy:${sy}px;
+      --ex:${ex}px;--ey:${ey}px;
+      --dur:${3 + Math.random() * 4}s;
+      --del:${4.2 + Math.random() * 3}s;
+      transform: translate(-50%,-50%);
+    `;
+    container.appendChild(span);
+  });
+})();
+
+</script>
+
+<!-- KAI JS -->
+<script>
+// All KAI JS is wrapped in initKAI() — called by the sequence controller
+// when KAI becomes visible, so all timers run relative to KAI's appearance
+window.initKAI = function() {
+
+  /* ── WING LIVE (breathing) after spread ─────────── */
+  setTimeout(() => {
+    const wL = document.getElementById('kai-wL');
+    const wR = document.getElementById('kai-wR');
+    if (wL) wL.classList.add('live');
+    if (wR) wR.classList.add('live');
+  }, 3500);
+
+  /* ── TAGLINE TYPEWRITER ──────────────────────────── */
+  (function(){
+    const el = document.getElementById('kai-tgt');
+    if (!el) return;
+    // Clear any text that may have been typed prematurely
+    el.textContent = '';
+    const txt = '> engineering excellence since 1932';
+    let i = 0;
+    function type() {
+      if (i <= txt.length) {
+        el.textContent = txt.slice(0, i++);
+        setTimeout(type, 44 + Math.random() * 28);
+      }
+    }
+    setTimeout(type, 4200);
+  })();
+
+  /* ── HEX FLOATERS ────────────────────────────────── */
+  (function(){
+    const c = document.getElementById('kai-hf');
+    if (!c) return;
+    // Clear any floaters added on page load
+    c.innerHTML = '';
+    const items = ['0x4B4149','авиация','#1e40af','git commit','v2.0.0',
+      'ssh kai@edu','КАЗАНЬ','<KAI />','async lift','[funded]',
+      'КАИ 1932','engineering','01001011','Татарстан','aerospace'];
+    items.forEach((s, i) => {
+      const el = document.createElement('span');
+      el.textContent = s;
+      const a = (i / items.length) * Math.PI * 2;
+      const r = 255 + Math.random() * 120;
+      el.style.cssText = `
+        --sx:${(Math.cos(a)*(r-22)).toFixed(1)}px;
+        --sy:${(Math.sin(a)*(r-22)).toFixed(1)}px;
+        --ex:${(Math.cos(a)*r).toFixed(1)}px;
+        --ey:${(Math.sin(a)*r).toFixed(1)}px;
+        --d:${(3+Math.random()*4).toFixed(2)}s;
+        --dl:${(0.5+Math.random()*1.5).toFixed(2)}s;
+        transform:translate(-50%,-50%);
+      `;
+      c.appendChild(el);
+    });
+  })();
+
+}; // end initKAI
+</script>
 
 </body>
 </html>
